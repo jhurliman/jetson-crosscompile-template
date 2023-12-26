@@ -2,8 +2,8 @@ set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
 
 # Specify the cross compilers
-set(CMAKE_C_COMPILER "clang")
-set(CMAKE_CXX_COMPILER "clang++")
+set(CMAKE_C_COMPILER "/usr/bin/clang")
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
 # Set the sysroot path
 set(CMAKE_SYSROOT "${CMAKE_CURRENT_LIST_DIR}/sysroot/jetson-t210")
@@ -26,11 +26,12 @@ endif()
 
 set(CUDA_BIN_PATH "${CUDA_TOOLKIT_ROOT_DIR}/bin")
 set(CMAKE_CUDA_COMPILER_LIBRARY_ROOT_FROM_NVVMIR_LIBRARY_DIR "${CUDA_TOOLKIT_ROOT_DIR}")
+set(_CUDA_COMPILER_LIBRARY_ROOT_FROM_NVVMIR_LIBRARY_DIR "${CUDA_TOOLKIT_ROOT_DIR}")
 set(CUDA_TOOLKIT_INCLUDE "${SYSROOT_CUDA}/include")
 set(CUDA_CUDART_LIBRARY "${SYSROOT_CUDA}/lib64/libcudart.so")
 
 # Specify Clang as the CUDA compiler
-set(CMAKE_CUDA_COMPILER "/usr/bin/clang++")
+set(CMAKE_CUDA_COMPILER "${CMAKE_CXX_COMPILER}")
 set(CMAKE_CUDA_COMPILER_FORCED ON)
 
 # Set Clang flags for CUDA

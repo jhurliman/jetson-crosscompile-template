@@ -2,10 +2,22 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
+
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+
   "[cpp]": {
     "editor.defaultFormatter": "xaver.clang-format"
   },
-  "files.eol": "\n",
+
   "C_Cpp.autoAddFileAssociations": false,
-  "cmake.configureOnOpen": true
+  "cmake.configureOnOpen": true,
+
+  "search.exclude": {
+    "build/": true,
+    "nvidia/": true,
+    "sysroot/": true
+  }
 }

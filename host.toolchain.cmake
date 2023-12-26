@@ -1,9 +1,9 @@
 # Specify the compilers
-set(CMAKE_C_COMPILER "clang")
-set(CMAKE_CXX_COMPILER "clang++")
+set(CMAKE_C_COMPILER "/usr/bin/clang")
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
 # Specify Clang as the CUDA compiler
-set(CMAKE_CUDA_COMPILER "/usr/bin/clang++")
+set(CMAKE_CUDA_COMPILER "${CMAKE_CXX_COMPILER}")
 set(CMAKE_CUDA_COMPILER_FORCED ON)
 
 # Set Clang flags for CUDA

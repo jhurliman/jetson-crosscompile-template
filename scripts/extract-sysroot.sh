@@ -3,6 +3,35 @@
 set -e
 
 BOARD_ID="t210"
+
+# Help message
+show_help() {
+    echo "Usage: $0 [options]"
+    echo ""
+    echo "Options:"
+    echo "  --board-id [id]   Set the Jetson board ID (default: 't210', valid: 't210', 't186', 't194', 't234')"
+    echo "  --help            Show this help message and exit"
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --board-id)
+            BOARD_ID="$2"
+            shift # past argument
+            shift # past value
+            ;;
+        --help)
+            show_help
+            exit 0
+            ;;
+        *)    # unknown option
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
 TOOLCHAIN_URL="https://developer.nvidia.com/embedded/dlc/l4t-gcc-7-3-1-toolchain-64-bit"
 TOOLCHAIN_DIRECTORY="gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu"
 TOOLCHAIN_FILENAME="${TOOLCHAIN_DIRECTORY}.tar.xz"
@@ -20,7 +49,7 @@ declare -A SYMLINKS_TO_FIX=(
 cd "$(dirname "$0")"
 
 # Build the docker image that will be used to create the sysroot
-docker build -t "jetson-${BOARD_ID}-sysroot" -f "Dockerfile.jetson-${BOARD_ID}" .
+docker build --platform linux/arm64 -t "jetson-${BOARD_ID}-sysroot" -f "Dockerfile.jetson-${BOARD_ID}" .
 docker create --name "jetson-${BOARD_ID}-sysroot" "jetson-${BOARD_ID}-sysroot"
 
 mkdir -p "../sysroot"

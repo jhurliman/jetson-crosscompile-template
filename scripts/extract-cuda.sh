@@ -2,7 +2,8 @@
 
 set -e
 
-BASE_URL="https://developer.nvidia.com/assets/embedded/secure/tools/files/jetpack-sdks/jetpack-4.6/JETPACK_46_b194/"
+BASE_CROSS_URL="https://developer.nvidia.com/assets/embedded/secure/tools/files/jetpack-sdks/jetpack-4.6/JETPACK_46_b194/"
+BASE_CUDA_URL="https://developer.nvidia.com/assets/embedded/secure/tools/files/jetpack-sdks/jetpack-4.6/JETPACK_46_b194/ubuntu1804/"
 CROSS_DEB="cuda-repo-cross-aarch64-ubuntu1804-10-2-local_10.2.460-1_all.deb"
 CUDA_DEB="cuda-repo-ubuntu1804-10-2-local_10.2.460-450.115-1_amd64.deb"
 
@@ -14,11 +15,11 @@ cd "../nvidia"
 # Ensure the required `.deb` files exist
 DEBS_EXIST=1
 if [[ ! -f "./${CROSS_DEB}" ]]; then
-    echo "ERROR: $(realpath ./${CROSS_DEB}) does not exist. Download it from <${BASE_URL}${CROSS_DEB}> (requires NVIDIA login)"
+    echo "ERROR: $(realpath ./${CROSS_DEB}) does not exist. Download it from <${BASE_CROSS_URL}${CROSS_DEB}> (requires NVIDIA login)"
     DEBS_EXIST=0
 fi
 if [[ ! -f "./${CUDA_DEB}" ]]; then
-    echo "ERROR: $(realpath ./${CUDA_DEB}) does not exist. Download it from <${BASE_URL}${CUDA_DEB}> (requires NVIDIA login)"
+    echo "ERROR: $(realpath ./${CUDA_DEB}) does not exist. Download it from <${BASE_CUDA_URL}${CUDA_DEB}> (requires NVIDIA login)"
     DEBS_EXIST=0
 fi
 if [[ "${DEBS_EXIST}" -eq 0 ]]; then
