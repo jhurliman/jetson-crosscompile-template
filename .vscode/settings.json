@@ -1,0 +1,11 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "[cpp]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "files.eol": "\n",
+  "C_Cpp.autoAddFileAssociations": false,
+  "cmake.configureOnOpen": true
+}

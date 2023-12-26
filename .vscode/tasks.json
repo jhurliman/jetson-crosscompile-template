@@ -1,0 +1,46 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake: Configure for Jetson Nano",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--preset", "jetson-nano"],
+      "group": "build"
+    },
+    {
+      "label": "Build for Jetson Nano",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "build/jetson-nano"],
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "dependsOn": "CMake: Configure for Jetson Nano"
+    },
+    {
+      "label": "Start gdbserver on Jetson Nano",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "'scp \"${workspaceRoot}/build/jetson-nano/test\" ${env:USER}@jetson-nano:/home/${env:USER}/app && ssh ${env:USER}@jetson-nano \"gdbserver :2000 /home/${env:USER}/app\"'"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": false
+      },
+      "isBackground": true,
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "dependsOn": "Build for Jetson Nano"
+    }
+  ]
+}

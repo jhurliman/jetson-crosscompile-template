@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# Build output
+build/
+
+# Vendor-provided files
+nvidia/
+
+# Extracted sysroot and toolchain
+sysroot/

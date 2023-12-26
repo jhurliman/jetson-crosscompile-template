@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Remote Debug on Jetson Nano",
+      "type": "cppdbg",
+      "request": "launch",
+      "targetArchitecture": "arm64",
+      "program": "${workspaceRoot}/build/jetson-nano/test",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": true,
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerServerAddress": "jetson-nano:2000",
+      "miDebuggerPath": "/usr/bin/gdb-multiarch",
+      "miDebuggerArgs": " -ex 'handle all print nostop noignore'",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
