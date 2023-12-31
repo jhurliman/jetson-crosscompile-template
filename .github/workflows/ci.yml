@@ -27,10 +27,10 @@ jobs:
         uses: egor-tensin/setup-clang@v1
         with:
           version: ${{ matrix.clang-version }}
-      - name: Install cmake, ninja, lld, clang-format, and clang-tidy
+      - name: Install cmake, ninja, lld, clang-format, clang-tidy, and cmake-format
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build lld clang-format clang-tidy
+          sudo apt-get install -y cmake ninja-build lld clang-format clang-tidy cmake-format
       - uses: actions/checkout@v3
         with:
           lfs: true
