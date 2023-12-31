@@ -1,9 +1,5 @@
 // -*- jsonc -*-
 {
-  "recommendations": [
-    "esbenp.prettier-vscode",
-    "ms-vscode.cpptools",
-    "xaver.clang-format"
-  ],
+  "recommendations": ["esbenp.prettier-vscode", "ms-vscode.cpptools"],
   "unwantedRecommendations": []
 }

@@ -9,7 +9,10 @@
   "files.trimTrailingWhitespace": true,
 
   "[cpp]": {
-    "editor.defaultFormatter": "xaver.clang-format"
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  },
+  "[cuda-cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
   },
 
   "C_Cpp.autoAddFileAssociations": false,
