@@ -22,12 +22,12 @@ jobs:
           version: ${{ matrix.clang-version }}
       - name: Set /usr/local/bin/clang-${{ matrix.clang-version }} as default
         run: |
-          sudo update-alternatives --install /usr/bin/clang clang /usr/local/bin/clang-${{ matrix.clang-version }} 100
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/local/bin/clang++-${{ matrix.clang-version }} 100
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/local/bin/clang-format-${{ matrix.clang-version }} 100
-          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/local/bin/clang-tidy-${{ matrix.clang-version }} 100
-          sudo update-alternatives --install /usr/bin/cc cc /usr/local/bin/clang-${{ matrix.clang-version }} 100
-          sudo update-alternatives --install /usr/bin/c++ c++ /usr/local/bin/clang++-${{ matrix.clang-version }} 100
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ matrix.clang-version }} 999
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${{ matrix.clang-version }} 999
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-${{ matrix.clang-version }} 999
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-${{ matrix.clang-version }} 999
+          sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-${{ matrix.clang-version }} 999
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-${{ matrix.clang-version }} 999
       - name: Install CMake/Ninja
         run: |
           sudo apt-get update
