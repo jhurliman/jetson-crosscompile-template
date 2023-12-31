@@ -32,13 +32,9 @@ jobs:
         with:
           lfs: true
       - name: cmake-format
-        run: |
-          cmake-format --version
-          cmake-format --check --config-file .cmake-format.yaml CMakeLists.txt $(find . cmake -maxdepth 1 -name '*.cmake')
+        run: cmake-format --check --config-file .cmake-format.yaml CMakeLists.txt $(find . cmake -maxdepth 1 -name '*.cmake')
       - name: clang-format-${{ matrix.clang-version }}
-        run: |
-          clang-format-${{ matrix.clang-version }} --version
-          clang-format-${{ matrix.clang-version }} --dry-run --Werror --style=file $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
+        run: clang-format-${{ matrix.clang-version }} --dry-run --Werror --style=file $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
       - name: Install CUDA Toolkit (x86_64)
         uses: Jimver/cuda-toolkit@v0.2.11
         id: cuda-toolkit
@@ -50,6 +46,4 @@ jobs:
       # - name: Build for Jetson Nano (aarch64)
       #   run: make jetson-nano
       - name: clang-tidy-${{ matrix.clang-version }}
-        run: |
-          clang-tidy-${{ matrix.clang-version }} --version
-          clang-tidy-${{ matrix.clang-version }} -p build/host --config-file=.clang-tidy --use-color $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
+        run: clang-tidy-${{ matrix.clang-version }} -p build/host --config-file=.clang-tidy --use-color $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
