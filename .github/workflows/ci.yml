@@ -17,20 +17,20 @@ jobs:
           - 14
           - 15
     steps:
-      - name: Install CUDA Toolkit (x86_64)
-        uses: Jimver/cuda-toolkit@v0.2.11
-        id: cuda-toolkit
-        with:
-          cuda: "10.2.89"
-          linux-local-args: '["--toolkit", "--override"]'
       - name: Setup Clang
         uses: egor-tensin/setup-clang@v1
         with:
           version: ${{ matrix.clang-version }}
-      - name: Install cmake, ninja, lld, clang-format, clang-tidy, and cmake-format
+      - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build lld clang-format clang-tidy cmake-format
+          sudo apt-get install -y \
+            clang-format-${{ matrix.clang-version }} \
+            clang-tidy-${{ matrix.clang-version }} \
+            cmake \
+            cmake-format
+            lld-${{ matrix.clang-version }} \
+            ninja-build \
       - uses: actions/checkout@v3
         with:
           lfs: true
@@ -38,6 +38,12 @@ jobs:
         run: cmake-format --check --config-file .cmake-format.yaml CMakeLists.txt $(find . cmake -maxdepth 1 -name '*.cmake')
       - name: clang-format
         run: clang-format --dry-run --Werror --style=file $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
+      - name: Install CUDA Toolkit (x86_64)
+        uses: Jimver/cuda-toolkit@v0.2.11
+        id: cuda-toolkit
+        with:
+          cuda: "10.2.89"
+          linux-local-args: '["--toolkit", "--override"]'
       - name: Build for host (x86_64)
         run: make
       # - name: Build for Jetson Nano (aarch64)
