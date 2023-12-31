@@ -25,7 +25,7 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.11
         id: cuda-toolkit
         with:
-          cuda: "10.2"
+          cuda: "10.2.89"
       - name: Install cmake, ninja, lld, clang-format, and clang-tidy
         run: |
           sudo apt-get update
