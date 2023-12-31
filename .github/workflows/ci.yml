@@ -17,10 +17,16 @@ jobs:
           - 14
           - 15
     steps:
-      - name: Setup Clang
+      - name: Install clang-${{ matrix.clang-version }}
         uses: egor-tensin/setup-clang@v1
         with:
           version: ${{ matrix.clang-version }}
+      - name: Set clang-${{ matrix.clang-version }} as default
+        run: |
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ matrix.clang-version }} 100
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${{ matrix.clang-version }} 100
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-${{ matrix.clang-version }} 100
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-${{ matrix.clang-version }} 100
       - name: Install CMake/Ninja
         run: |
           sudo apt-get update
