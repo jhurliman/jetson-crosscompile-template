@@ -10,11 +10,14 @@ NVIDIA Jetson devices are great for edge computing, but the development experien
 
 ### Development Machine
 
-The following prerequisites must be installed on your local machine, the development (or host) machine:
+The following prerequisites must be installed on the development (or host) machine:
 
 - [Visual Studio Code](https://code.visualstudio.com/) (optional)
 - [CMake](https://cmake.org/) (version 3.18 or higher)
 - [clang](https://clang.llvm.org/)
+- [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
+- [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
+- [cmake-format](https://github.com/cheshirekow/cmake_format)
 - [lld](https://lld.llvm.org/)
 - [gdb-multiarch](https://www.gnu.org/software/gdb/) (for debugging)
 - [Docker](https://www.docker.com/) (for initial sysroot creation)
@@ -23,15 +26,13 @@ The following prerequisites must be installed on your local machine, the develop
 On Ubuntu, you can install these prerequisites with the following command:
 
 ```bash
-CLANG_VERSION=15 sh -c 'sudo apt update && sudo apt install -y binfmt-support cmake clang-$CLANG_VERSION clang-tools-$CLANG_VERSION clang-format-$CLANG_VERSION lld-$CLANG_VERSION docker.io gdb-multiarch qemu qemu-user-static'
+CLANG_VERSION=15 sh -c 'sudo apt update && sudo apt install -y binfmt-support cmake clang-$CLANG_VERSION clang-tools-$CLANG_VERSION clang-format-$CLANG_VERSION clang-tidy-$CLANG_VERSION lld-$CLANG_VERSION cmake-format docker.io gdb-multiarch qemu qemu-user-static'
 ```
 
 If you install a specific version of clang (such as `clang-15 clang-tools-15 clang-format-15`), you will need to use `update-alternatives` to set the default clang version:
 
 ```bash
-sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-15 100
-sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-15 100
-sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-15 100
+CLANG_VERSION=15 sh -c 'sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-$CLANG_VERSION 100 && sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-$CLANG_VERSION 100 && sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-$CLANG_VERSION 100 && sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-$CLANG_VERSION 100'
 ```
 
 If you just installed Docker, you will need to add your user to the `docker` group and open a new shell with the updated group membership (or log out and back in):
@@ -98,6 +99,5 @@ Released by [John Hurliman](https://jhurliman.org/) under the [MIT license](LICE
 ## TODO
 
 - [ ] ctest unit test
-- [ ] clang-format
-- [ ] GitHub Actions CI
+- [ ] CPM dependency management
 - [ ] Add support for more Jetson devices

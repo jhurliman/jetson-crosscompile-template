@@ -17,6 +17,10 @@
 
   "C_Cpp.autoAddFileAssociations": false,
   "cmake.configureOnOpen": true,
+  "cmakeFormat.args": [
+    "--config-file",
+    "${workspaceFolder}/.cmake-format.yaml"
+  ],
 
   "search.exclude": {
     "build/": true,

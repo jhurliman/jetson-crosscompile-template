@@ -157,7 +157,7 @@ SeparateDefinitionBlocks: Always
 ShortNamespaceLines: 1
 SortIncludes: CaseSensitive
 SortJavaStaticImport: Before
-SortUsingDeclarations: Lexicographic
+SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false

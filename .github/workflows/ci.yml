@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        clang-version:
+          - 14
+          - 15
+    steps:
+      - name: Setup Clang
+        uses: egor-tensin/setup-clang@v1
+        with:
+          version: ${{ matrix.clang-version }}
+      - name: Install CUDA Toolkit (x86_64)
+        uses: Jimver/cuda-toolkit@v0.2.11
+        id: cuda-toolkit
+        with:
+          cuda: "10.2"
+      - name: Install cmake, ninja, lld, clang-format, and clang-tidy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build lld clang-format clang-tidy
+      - uses: actions/checkout@v3
+        with:
+          lfs: true
+      - name: cmake-format
+        run: cmake-format --check --config-file .cmake-format.yaml CMakeLists.txt $(find . cmake -maxdepth 1 -name '*.cmake')
+      - name: clang-format
+        run: clang-format --dry-run --Werror --style=file $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
+      - name: Build for host (x86_64)
+        run: make
+      # - name: Build for Jetson Nano (aarch64)
+      #   run: make jetson-nano
+      - name: clang-tidy
+        run: |
+          clang-tidy --version
+          clang-tidy -p build/host --config-file=.clang-tidy --use-color $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')

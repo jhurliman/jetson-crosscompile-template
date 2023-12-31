@@ -20,13 +20,11 @@ if(NOT EXISTS ${GCC_TOOLCHAIN})
 endif()
 
 set(CUDA_TOOLKIT_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/nvidia/cuda-10.2_amd64")
-if(NOT EXISTS ${CUDA_TOOLKIT_ROOT_DIR})
-  message(FATAL_ERROR "CUDA_TOOLKIT_ROOT_DIR does not exist: ${CUDA_TOOLKIT_ROOT_DIR}\nPlease run ./scripts/extract-cuda.sh")
+set(CUDAToolkit_ROOT "${CMAKE_CURRENT_LIST_DIR}/nvidia/cuda-10.2_amd64")
+if(NOT EXISTS ${CUDAToolkit_ROOT})
+  message(FATAL_ERROR "CUDAToolkit_ROOT does not exist: ${CUDAToolkit_ROOT}\nPlease run ./scripts/extract-cuda.sh")
 endif()
 
-set(CUDA_BIN_PATH "${CUDA_TOOLKIT_ROOT_DIR}/bin")
-set(CMAKE_CUDA_COMPILER_LIBRARY_ROOT_FROM_NVVMIR_LIBRARY_DIR "${CUDA_TOOLKIT_ROOT_DIR}")
-set(_CUDA_COMPILER_LIBRARY_ROOT_FROM_NVVMIR_LIBRARY_DIR "${CUDA_TOOLKIT_ROOT_DIR}")
 set(CUDA_TOOLKIT_INCLUDE "${SYSROOT_CUDA}/include")
 set(CUDA_CUDART_LIBRARY "${SYSROOT_CUDA}/lib64/libcudart.so")
 
