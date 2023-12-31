@@ -22,7 +22,7 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: "10.2.89"
-          linux-local-args: '["--toolkit"]'
+          linux-local-args: '["--toolkit", "--override"]'
       - name: Setup Clang
         uses: egor-tensin/setup-clang@v1
         with:
