@@ -14,22 +14,27 @@ jobs:
       fail-fast: false
       matrix:
         clang-version:
-          - 14
           - 15
     steps:
-      - name: Setup Clang
+      - name: Install clang-${{ matrix.clang-version }}
         uses: egor-tensin/setup-clang@v1
         with:
           version: ${{ matrix.clang-version }}
-      - name: Install CUDA Toolkit (x86_64)
-        uses: Jimver/cuda-toolkit@v0.2.11
-        id: cuda-toolkit
-        with:
-          cuda: "10.2.89"
-      - name: Install cmake, ninja, lld, clang-format, and clang-tidy
+      - name: Set clang-${{ matrix.clang-version }} as default
+        run: |
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ matrix.clang-version }} 999
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${{ matrix.clang-version }} 999
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-${{ matrix.clang-version }} 999
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-${{ matrix.clang-version }} 999
+          sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-${{ matrix.clang-version }} 999
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-${{ matrix.clang-version }} 999
+      - name: Install CMake/Ninja
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build lld clang-format clang-tidy
+          sudo apt-get install -y \
+            cmake \
+            cmake-format \
+            ninja-build \
       - uses: actions/checkout@v3
         with:
           lfs: true
@@ -37,11 +42,17 @@ jobs:
         run: cmake-format --check --config-file .cmake-format.yaml CMakeLists.txt $(find . cmake -maxdepth 1 -name '*.cmake')
       - name: clang-format
         run: clang-format --dry-run --Werror --style=file $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
+      - name: Install CUDA Toolkit (x86_64)
+        uses: Jimver/cuda-toolkit@v0.2.11
+        id: cuda-toolkit
+        with:
+          cuda: "10.2.89"
+          linux-local-args: '["--toolkit", "--override"]'
       - name: Build for host (x86_64)
-        run: make
+        run: |
+          cmake --version
+          make
       # - name: Build for Jetson Nano (aarch64)
       #   run: make jetson-nano
       - name: clang-tidy
-        run: |
-          clang-tidy --version
-          clang-tidy -p build/host --config-file=.clang-tidy --use-color $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
+        run: clang-tidy -p build/host --config-file=.clang-tidy --use-color $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
