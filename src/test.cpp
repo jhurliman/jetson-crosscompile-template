@@ -1,9 +1,6 @@
-#include <cuda_runtime.h>
+#include "hello.hpp"
 
 #include <iostream>
-
-// CUDA forward declaration
-void helloFromGPU(cudaStream_t stream);
 
 int main() {
   std::cout << "Hello from CPU!\n";

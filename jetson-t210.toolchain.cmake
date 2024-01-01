@@ -32,8 +32,7 @@ set(CMAKE_CUDA_COMPILER "${CMAKE_CXX_COMPILER}")
 set(CMAKE_CUDA_COMPILER_FORCED ON)
 
 # Set Clang flags for CUDA
-set(CMAKE_CUDA_FLAGS "--target=aarch64-linux-gnu --cuda-gpu-arch=sm_53" CACHE STRING "CUDA flags")
-set(CMAKE_CUDA_ARCHITECTURES OFF CACHE STRING "CUDA architectures" FORCE)
+set(CMAKE_CUDA_FLAGS "--target=aarch64-linux-gnu" CACHE STRING "CUDA flags")
 
 # Adjust the default behavior of the FIND_XXX() commands:
 # search programs in the host environment only.
