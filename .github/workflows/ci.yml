@@ -48,11 +48,6 @@ jobs:
         with:
           cuda: "10.2.89"
           linux-local-args: '["--toolkit", "--override"]'
-      - name: Check clang version
-        run: |
-          clang++ --version
-          /usr/bin/clang++ --version
-          c++ --version
       - name: Build for host (x86_64)
         run: |
           cmake --version
