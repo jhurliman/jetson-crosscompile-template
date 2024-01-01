@@ -5,10 +5,6 @@ set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 # Specify Clang as the CUDA compiler
 set(CMAKE_CUDA_COMPILER "${CMAKE_CXX_COMPILER}")
 
-# Set Clang flags for CUDA
-set(CMAKE_CUDA_FLAGS "--cuda-gpu-arch=sm_53" CACHE STRING "CUDA flags")
-set(CMAKE_CUDA_ARCHITECTURES OFF CACHE STRING "CUDA architectures" FORCE)
-
 # Set linker flags
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld" CACHE STRING "Linker flags")
 

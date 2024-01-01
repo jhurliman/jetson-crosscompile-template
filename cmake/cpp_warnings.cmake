@@ -8,7 +8,6 @@ set(PROJECT_WARNING_FLAGS
 
   # Readability, tidiness, and portability
   "-Wshadow"
-  "-Wold-style-cast"
   "-Wunused"
   "-Wpedantic"
 

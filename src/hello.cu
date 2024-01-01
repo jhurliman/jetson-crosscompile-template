@@ -1,3 +1,5 @@
+#include "hello.hpp"
+
 #include <cuda_runtime.h>
 
 #include <cstdio>
