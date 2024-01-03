@@ -20,11 +20,29 @@ The following prerequisites must be installed on the development (or host) machi
 On Ubuntu, you can install these prerequisites with the following commands:
 
 ```bash
-CLANG_VERSION=15 sh -c 'sudo apt update && sudo apt install -y binfmt-support cmake clang-$CLANG_VERSION clang-tools-$CLANG_VERSION clang-format-$CLANG_VERSION clang-tidy-$CLANG_VERSION lld-$CLANG_VERSION cmake-format docker.io gdb-multiarch qemu qemu-user-static'
-```
-
-```bash
-CLANG_VERSION=15 sh -c 'sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-$CLANG_VERSION 100 && sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-$CLANG_VERSION 100 && sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-$CLANG_VERSION 100 && sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-$CLANG_VERSION 100'
+CLANG_VERSION=15
+sudo apt update && sudo apt install -y \
+  binfmt-support \
+  clang-$CLANG_VERSION \
+  clang-format-$CLANG_VERSION \
+  clang-tidy-$CLANG_VERSION \
+  clang-tools-$CLANG_VERSION \
+  cmake \
+  cmake-format \
+  docker.io \
+  gcovr \
+  gdb-multiarch \
+  lld-$CLANG_VERSION \
+  qemu \
+  qemu-user-static
+sudo update-alternatives --install \
+    /usr/bin/clang clang /usr/bin/clang-$CLANG_VERSION 100 \
+  && sudo update-alternatives --install \
+    /usr/bin/clang++ clang++ /usr/bin/clang++-$CLANG_VERSION 100 \
+  && sudo update-alternatives --install \
+    /usr/bin/clang-format clang-format /usr/bin/clang-format-$CLANG_VERSION 100 \
+  && sudo update-alternatives --install \
+    /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-$CLANG_VERSION 100
 ```
 
 If you just installed Docker, you will need to add your user to the `docker` group and open a new shell with the updated group membership (or log out and back in):
