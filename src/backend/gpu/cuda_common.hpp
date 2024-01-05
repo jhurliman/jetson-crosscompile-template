@@ -18,6 +18,7 @@
 #undef __cold__
 
 // Now include the standard library headers
+#include <memory>
 #include <string>
 
 // Restore the original macro definitions

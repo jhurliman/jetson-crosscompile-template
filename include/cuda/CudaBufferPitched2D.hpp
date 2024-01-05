@@ -2,6 +2,8 @@
 
 #include "CudaBuffer2D.hpp"
 
+#include <memory>
+
 class CudaBufferPitched : public CudaBuffer2D {
 public:
   static tl::expected<std::unique_ptr<CudaBufferPitched>, StreamError> create(
