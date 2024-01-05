@@ -26,6 +26,7 @@ endif()
 
 set(CUDA_TOOLKIT_INCLUDE "${SYSROOT_CUDA}/include")
 set(CUDA_CUDART_LIBRARY "${SYSROOT_CUDA}/lib64/libcudart.so")
+set(CUDA_NVTX_LIBRARY "${SYSROOT_CUDA}/lib64/libnvToolsExt.so")
 
 # Specify Clang as the CUDA compiler
 set(CMAKE_CUDA_COMPILER "${CMAKE_CXX_COMPILER}")
