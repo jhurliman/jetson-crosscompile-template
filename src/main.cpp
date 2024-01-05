@@ -49,7 +49,7 @@ int main() {
   }
 
   std::vector<int64_t> vecC(5);
-  err = bufC->copyToHost(vecC.data(), 0, vecC.size(), stream);
+  err = bufC->copyToHost(vecC.data(), 0, vecC.size() * sizeof(int64_t), stream);
 
   destroyStream(stream);
 
