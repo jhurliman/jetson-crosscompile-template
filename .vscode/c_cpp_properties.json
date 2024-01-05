@@ -3,10 +3,10 @@
     {
       "name": "Linux",
       "includePath": ["${workspaceFolder}/**"],
-      "defines": [],
+      "defines": ["USE_GPU"],
       "compilerPath": "/usr/bin/clang++",
       "cStandard": "c23",
-      "cppStandard": "c++23",
+      "cppStandard": "c++20",
       "compileCommands": "${workspaceFolder}/build/host/compile_commands.json"
     },
     {
@@ -17,7 +17,7 @@
         "${workspaceFolder}/sysroot/jetson-t210/usr/include/aarch64-linux-gnu/**",
         "${workspaceFolder}/sysroot/jetson-t210/usr/local/cuda-10.2/targets/aarch64-linux/include/**"
       ],
-      "defines": [],
+      "defines": ["USE_GPU", "USE_T210"],
       "compilerPath": "/usr/bin/clang++",
       "compilerArgs": [
         "--target=aarch64-linux-gnu",
@@ -25,7 +25,7 @@
         "--gcc-toolchain=${workspaceFolder}/sysroot/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu"
       ],
       "cStandard": "c23",
-      "cppStandard": "c++23",
+      "cppStandard": "c++20",
       "intelliSenseMode": "linux-clang-arm64",
       "configurationProvider": "ms-vscode.cmake-tools",
       "compileCommands": "${workspaceFolder}/build/jetson-nano/compile_commands.json"
