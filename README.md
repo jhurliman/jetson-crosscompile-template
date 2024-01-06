@@ -98,6 +98,10 @@ Released by [John Hurliman](https://jhurliman.org/) under the [MIT license](LICE
 
 ## TODO
 
-- [ ] ctest unit test
-- [ ] CPM dependency management
+- [x] ctest unit test
+- [x] CPM dependency management
+- [ ] IWYU integration
+- [ ] `make jetson-nano` in CI
+- [ ] fix <<<...>>> clang warning for CUDA kernel launch
+- [ ] C++23
 - [ ] Add support for more Jetson devices

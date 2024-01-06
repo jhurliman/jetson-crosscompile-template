@@ -8,6 +8,9 @@
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
 
+  "[cmake]": {
+    "editor.defaultFormatter": "cheshirekow.cmake-format"
+  },
   "[cpp]": {
     "editor.defaultFormatter": "ms-vscode.cpptools"
   },

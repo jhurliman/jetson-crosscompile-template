@@ -14,7 +14,24 @@
       "binaryDir": "${sourceDir}/build/host",
       "toolchainFile": "${sourceDir}/host.toolchain.cmake",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "COMPILE_CPU": "ON",
+        "COMPILE_CUDA": "ON",
+        "COMPILE_T210": "OFF"
+      }
+    },
+    {
+      "name": "host-cpu",
+      "displayName": "Host System (no CUDA)",
+      "description": "Build for the host system (CPU only, no CUDA)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/host",
+      "toolchainFile": "${sourceDir}/host.toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "COMPILE_CPU": "ON",
+        "COMPILE_CUDA": "OFF",
+        "COMPILE_T210": "OFF"
       }
     },
     {
@@ -25,7 +42,10 @@
       "binaryDir": "${sourceDir}/build/jetson-nano",
       "toolchainFile": "${sourceDir}/jetson-t210.toolchain.cmake",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "COMPILE_CPU": "OFF",
+        "COMPILE_CUDA": "OFF",
+        "COMPILE_T210": "ON"
       }
     }
   ]
