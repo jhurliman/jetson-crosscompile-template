@@ -48,13 +48,15 @@ int main() {
     return 1;
   }
 
-  std::vector<int64_t> vecC(5);
+  constexpr size_t n = 5;
+  std::vector<int64_t> vecC(n);
   err = bufC->copyToHost(vecC.data(), 0, vecC.size() * sizeof(int64_t), stream);
 
   destroyStream(stream);
 
   // print the first element, then a comma and a space for the rest
   std::cout << "Result: " << vecC[0];
+#pragma unroll
   for (size_t i = 1; i < vecC.size(); ++i) {
     std::cout << ", " << vecC[i];
   }

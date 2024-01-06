@@ -8,6 +8,8 @@
 #include <tuple>
 #include <unordered_map>
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+
 // Global atomic counter for stream IDs
 std::atomic<uint64_t> gStreamIdCounter(0);
 
@@ -30,13 +32,13 @@ tl::expected<cudaStream_t, StreamError> createStream(
 
   // In a CPU-only context, the stream can be represented by its unique ID
   // Cast the streamId to cudaStream_t (which is just a placeholder in this context)
-  return reinterpret_cast<cudaStream_t>(uintptr_t(streamId));
+  return reinterpret_cast<cudaStream_t>(uintptr_t(streamId)); // NOLINT
 }
 
 void destroyStream(cudaStream_t stream) {
   // In a CPU-only context, the stream can be represented by its unique ID
   // Cast the stream to uint64_t to get the unique ID
-  const uint64_t streamId = reinterpret_cast<uint64_t>(stream);
+  const uint64_t streamId = reinterpret_cast<uint64_t>(stream); // NOLINT
 
   {
     // Remove the stream ID from the map
@@ -44,3 +46,5 @@ void destroyStream(cudaStream_t stream) {
     gStreamIdMap.erase(streamId);
   }
 }
+
+// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)

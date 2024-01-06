@@ -1,7 +1,7 @@
 #pragma once
 
+#include "../errors.hpp"
 #include "CudaBuffer.hpp"
-#include "errors.hpp"
 
 #include <tl/expected.hpp>
 

@@ -1,4 +1,4 @@
-.PHONY: all host jetson-nano test-cpu test-cuda clean
+.PHONY: all host jetson-nano test-cpu test-cuda tidy clean
 
 # Default to building for host
 all: host
@@ -20,6 +20,9 @@ test-cpu: host
 # Test CUDA backend on host
 test-cuda: host
 	./build/host/tests/unit_tests_cuda
+
+tidy:
+	clang-tidy -p build/host --config-file=.clang-tidy --use-color $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
 
 # Clean up build directories
 clean:

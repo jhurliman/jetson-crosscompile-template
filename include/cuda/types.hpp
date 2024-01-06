@@ -34,7 +34,7 @@
 #else
 #include <string>
 
-#define cudaHostAllocMapped 0x02
+constexpr uint cudaHostAllocMapped = 2;
 typedef struct CUstream_st* cudaStream_t;
 using cudaError_t = int;
 
