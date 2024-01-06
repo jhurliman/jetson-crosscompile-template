@@ -43,6 +43,8 @@ constexpr cudaError_t cudaErrorInvalidValue = 1;
 constexpr cudaError_t cudaErrorMemoryAllocation = 2;
 #endif
 
+#include "../errors.hpp"
+
 enum class CudaMemAttachFlag {
   Global = 1,
   Host = 2,

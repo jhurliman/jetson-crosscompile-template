@@ -1,9 +1,10 @@
 #pragma once
 
-#include "../errors.hpp"
 #include "CudaBuffer2D.hpp"
 
 #include <tl/expected.hpp>
+
+struct ArgumentError;
 
 /**
  * @brief A lightweight wrapper around a CudaBuffer2D that provides a view of the buffer as a 2D
