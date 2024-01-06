@@ -1,11 +1,6 @@
 #pragma once
 
-#include <string>
-
-#define cudaHostAllocMapped 0x02
-
 #ifdef USE_GPU
-
 // When compiling against CUDA and libstdc++ 13+ with clang <= 17, we run into
 // the issue described at <https://github.com/llvm/llvm-project/issues/62939>
 // where a conflict between the `__noinline__` macro defined in the CUDA headers
@@ -24,6 +19,7 @@
 #undef __cold__
 
 // Now include the standard library headers
+#include <memory>
 #include <string>
 
 // Restore the original macro definitions
@@ -33,10 +29,12 @@
 
 // Now include the CUDA headers
 #include <cuda_runtime_api.h>
-// #include <cuda_runtime.h>
 
 #define HAS_CUDA_11_2 (CUDA_MAJOR == 11 && CUDA_MINOR >= 2) || (CUDA_MAJOR > 11)
 #else
+#include <string>
+
+#define cudaHostAllocMapped 0x02
 typedef struct CUstream_st* cudaStream_t;
 using cudaError_t = int;
 
