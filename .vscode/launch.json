@@ -6,7 +6,7 @@
       "type": "cppdbg",
       "request": "launch",
       "targetArchitecture": "arm64",
-      "program": "${workspaceRoot}/build/jetson-nano/test",
+      "program": "${workspaceRoot}/build/jetson-nano/myapp",
       "args": [],
       "cwd": "${workspaceFolder}",
       "stopAtEntry": true,

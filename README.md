@@ -38,3 +38,13 @@ Contributions of all kinds are welcome! Use GitHub issues and pull requests for 
 ## License
 
 This project is open source and available under the [MIT License](LICENSE). Developed by [John Hurliman](https://jhurliman.org/).
+
+## TODO
+
+- [x] ctest unit test
+- [x] CPM dependency management
+- [ ] IWYU integration
+- [ ] `make jetson-nano` in CI
+- [ ] fix <<<...>>> clang warning for CUDA kernel launch
+- [ ] C++23
+- [ ] Add support for more Jetson devices
