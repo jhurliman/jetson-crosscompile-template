@@ -67,7 +67,7 @@ if(COMPILE_T210)
     backend_t210
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/gpu)
-  target_link_libraries(backend_t210 PUBLIC tl::expected CUDA::cudart CUDA::nvToolsExt)
+  target_link_libraries(backend_t210 PUBLIC tl::expected CUDA::cudart ${CUDA_NVTX_LIBRARY})
   set_target_properties(backend_t210 PROPERTIES CUDA_ARCHITECTURES 53 CUDA_SEPARABLE_COMPILATION ON)
   target_compile_definitions(
     backend_t210 PUBLIC -DUSE_GPU -DUSE_T210 -DCUDA_MAJOR=${CUDAToolkit_VERSION_MAJOR}

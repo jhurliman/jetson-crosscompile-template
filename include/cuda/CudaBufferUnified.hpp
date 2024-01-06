@@ -2,6 +2,8 @@
 
 #include "CudaBuffer.hpp"
 
+#include <memory>
+
 class CudaBufferUnified : public CudaBuffer {
 public:
   static tl::expected<std::unique_ptr<CudaBufferUnified>, StreamError> create(
