@@ -21,12 +21,26 @@
       "dependsOn": "CMake: Configure for Jetson Nano"
     },
     {
+      "label": "Deploy to Jetson Nano",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "'rsync -avz --delete \"${workspaceRoot}/build/jetson-nano\" ${input:jetson-user}@${input:jetson-host}:/home/${input:jetson-user}/'"
+      ],
+      "problemMatcher": [],
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "dependsOn": "Build for Jetson Nano"
+    },
+    {
       "label": "Start gdbserver on Jetson Nano",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "'scp \"${workspaceRoot}/build/jetson-nano/test\" ${env:USER}@jetson-nano:/home/${env:USER}/app && ssh ${env:USER}@jetson-nano \"gdbserver :2000 /home/${env:USER}/app\"'"
+        "'ssh ${input:jetson-user}@${input:jetson-host} \"gdbserver :2000 /home/${input:jetson-user}/jetson-nano/myapp\"'"
       ],
       "presentation": {
         "echo": true,
@@ -40,7 +54,21 @@
       "runOptions": {
         "instanceLimit": 1
       },
-      "dependsOn": "Build for Jetson Nano"
+      "dependsOn": "Deploy to Jetson Nano"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "jetson-host",
+      "type": "promptString",
+      "description": "Target Jetson hostname or IP address",
+      "default": "jetson-nano.local"
+    },
+    {
+      "id": "jetson-user",
+      "type": "promptString",
+      "description": "Target Jetson username",
+      "default": "nvidia"
     }
   ]
 }
