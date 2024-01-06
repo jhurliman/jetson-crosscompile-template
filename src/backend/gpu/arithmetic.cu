@@ -1,5 +1,4 @@
 #include "arithmetic.hpp"
-#include "cuda_common.hpp"
 
 #include <device_launch_parameters.h>
 
@@ -35,7 +34,7 @@ std::optional<StreamError> addVectors(const CudaArrayView<int64_t>& a,
 
   // Check for errors
   cudaError_t error = cudaGetLastError();
-  if (error != cudaSuccess) { return StreamError{error, CudaErrorMessage(error)}; }
+  if (error != cudaSuccess) { return StreamError{error, cudaErrorMessage(error)}; }
 
   return std::nullopt;
 }
@@ -54,7 +53,7 @@ std::optional<StreamError> addVectors(const CudaArrayView<double>& a,
 
   // Check for errors
   cudaError_t error = cudaGetLastError();
-  if (error != cudaSuccess) { return StreamError{error, CudaErrorMessage(error)}; }
+  if (error != cudaSuccess) { return StreamError{error, cudaErrorMessage(error)}; }
 
   return std::nullopt;
 }

@@ -1,12 +1,12 @@
 #include "cuda/CudaBufferHostPinned.hpp"
 
-#include "cuda_common.hpp"
+#include <cuda_runtime.h>
 
 tl::expected<std::unique_ptr<CudaBufferHostPinned>, StreamError> CudaBufferHostPinned::create(
   size_t byteSize, uint flags) {
   void* data;
   const cudaError_t err = cudaMallocHost(&data, byteSize, flags);
-  if (err != cudaSuccess) { return tl::make_unexpected(StreamError{err, CudaErrorMessage(err)}); }
+  if (err != cudaSuccess) { return tl::make_unexpected(StreamError{err, cudaErrorMessage(err)}); }
   return std::unique_ptr<CudaBufferHostPinned>(
     new CudaBufferHostPinned(static_cast<std::byte*>(data), byteSize));
 }
@@ -45,7 +45,7 @@ std::optional<StreamError> CudaBufferHostPinned::copyFrom(
   const void* srcPtr = static_cast<const std::byte*>(src.cudaData()) + srcOffset;
   const auto copyType = src.isDevice() ? cudaMemcpyDeviceToHost : cudaMemcpyHostToHost;
   const cudaError_t err = cudaMemcpyAsync(dstPtr, srcPtr, count, copyType, stream);
-  if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+  if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   return {};
 }
 
@@ -53,7 +53,7 @@ std::optional<StreamError> CudaBufferHostPinned::copyFromHost(
   const void* src, size_t dstOffset, size_t count, cudaStream_t stream) {
   void* dstPtr = static_cast<std::byte*>(data_) + dstOffset;
   const cudaError_t err = cudaMemcpyAsync(dstPtr, src, count, cudaMemcpyHostToHost, stream);
-  if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+  if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   return {};
 }
 
@@ -63,7 +63,7 @@ std::optional<StreamError> CudaBufferHostPinned::copyTo(
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
   const auto copyType = dst.isDevice() ? cudaMemcpyHostToDevice : cudaMemcpyHostToHost;
   const cudaError_t err = cudaMemcpyAsync(dstPtr, srcPtr, count, copyType, stream);
-  if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+  if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   return {};
 }
 
@@ -72,10 +72,10 @@ std::optional<StreamError> CudaBufferHostPinned::copyToHost(
   void* dstPtr = static_cast<std::byte*>(dst);
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
   cudaError_t err = cudaMemcpyAsync(dstPtr, srcPtr, count, cudaMemcpyHostToHost, stream);
-  if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+  if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   if (synchronize) {
     err = cudaStreamSynchronize(stream);
-    if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+    if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   }
   return {};
 }
@@ -83,6 +83,6 @@ std::optional<StreamError> CudaBufferHostPinned::copyToHost(
 std::optional<StreamError> CudaBufferHostPinned::memset(
   std::byte value, size_t count, cudaStream_t stream) {
   const cudaError_t err = cudaMemsetAsync(data_, int(value), count, stream);
-  if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+  if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   return {};
 }

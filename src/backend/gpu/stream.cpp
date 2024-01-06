@@ -1,7 +1,5 @@
 #include "cuda/stream.hpp"
 
-#include "cuda_common.hpp"
-
 #include <nvToolsExtCudaRt.h>
 
 tl::expected<cudaStream_t, StreamError> createStream(
@@ -10,7 +8,7 @@ tl::expected<cudaStream_t, StreamError> createStream(
   int minPriority, maxPriority;
   cudaError_t error = cudaDeviceGetStreamPriorityRange(&minPriority, &maxPriority);
   if (error != cudaSuccess) {
-    return tl::make_unexpected(StreamError{error, CudaErrorMessage(error)});
+    return tl::make_unexpected(StreamError{error, cudaErrorMessage(error)});
   }
 
   // Calculate the priority for the new stream
@@ -32,7 +30,7 @@ tl::expected<cudaStream_t, StreamError> createStream(
   cudaStream_t stream;
   error = cudaStreamCreateWithPriority(&stream, cudaStreamNonBlocking, priorityValue);
   if (error != cudaSuccess) {
-    return tl::make_unexpected(StreamError{error, CudaErrorMessage(error)});
+    return tl::make_unexpected(StreamError{error, cudaErrorMessage(error)});
   }
 
   // Set the stream name

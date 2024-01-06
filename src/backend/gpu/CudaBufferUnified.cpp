@@ -1,12 +1,10 @@
 #include "cuda/CudaBufferUnified.hpp"
 
-#include "cuda_common.hpp"
-
 tl::expected<std::unique_ptr<CudaBufferUnified>, StreamError> CudaBufferUnified::create(
   size_t byteSize, CudaMemAttachFlag flag) {
   void* data;
   const cudaError_t err = cudaMallocManaged(&data, byteSize, uint(flag));
-  if (err != cudaSuccess) { return tl::make_unexpected(StreamError{err, CudaErrorMessage(err)}); }
+  if (err != cudaSuccess) { return tl::make_unexpected(StreamError{err, cudaErrorMessage(err)}); }
   return std::unique_ptr<CudaBufferUnified>(new CudaBufferUnified(data, byteSize));
 }
 
@@ -56,7 +54,7 @@ std::optional<StreamError> CudaBufferUnified::copyFrom(
   const void* srcPtr = static_cast<const std::byte*>(src.cudaData()) + srcOffset;
   const auto copyType = src.isDevice() ? cudaMemcpyDeviceToDevice : cudaMemcpyHostToDevice;
   const cudaError_t err = cudaMemcpyAsync(dstPtr, srcPtr, count, copyType, stream);
-  if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+  if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   return {};
 }
 
@@ -64,7 +62,7 @@ std::optional<StreamError> CudaBufferUnified::copyFromHost(
   const void* src, size_t dstOffset, size_t count, cudaStream_t stream) {
   void* dstPtr = static_cast<std::byte*>(data_) + dstOffset;
   const cudaError_t err = cudaMemcpyAsync(dstPtr, src, count, cudaMemcpyHostToDevice, stream);
-  if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+  if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   return {};
 }
 
@@ -74,7 +72,7 @@ std::optional<StreamError> CudaBufferUnified::copyTo(
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
   const auto copyType = dst.isDevice() ? cudaMemcpyDeviceToDevice : cudaMemcpyDeviceToHost;
   const cudaError_t err = cudaMemcpyAsync(dstPtr, srcPtr, count, copyType, stream);
-  if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+  if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   return {};
 }
 
@@ -83,10 +81,10 @@ std::optional<StreamError> CudaBufferUnified::copyToHost(
   void* dstPtr = static_cast<std::byte*>(dst);
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
   cudaError_t err = cudaMemcpyAsync(dstPtr, srcPtr, count, cudaMemcpyDeviceToHost, stream);
-  if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+  if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   if (synchronize) {
     err = cudaStreamSynchronize(stream);
-    if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+    if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   }
   return {};
 }
@@ -94,7 +92,7 @@ std::optional<StreamError> CudaBufferUnified::copyToHost(
 std::optional<StreamError> CudaBufferUnified::memset(
   std::byte value, size_t count, cudaStream_t stream) {
   const cudaError_t err = cudaMemsetAsync(data_, int(value), count, stream);
-  if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+  if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   return {};
 }
 
@@ -119,10 +117,10 @@ std::optional<StreamError> CudaBufferUnified::prefetch(
   int dstDevice = cudaCpuDeviceId;
   if (flag != CudaMemAttachFlag::Host) {
     err = cudaGetDevice(&dstDevice);
-    if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+    if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   }
   err = cudaMemPrefetchAsync(data_, size_, dstDevice, stream);
 #endif
-  if (err != cudaSuccess) { return StreamError{err, CudaErrorMessage(err)}; }
+  if (err != cudaSuccess) { return StreamError{err, cudaErrorMessage(err)}; }
   return {};
 }
