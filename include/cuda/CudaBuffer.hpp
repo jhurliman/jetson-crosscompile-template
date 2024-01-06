@@ -14,7 +14,14 @@
  */
 class CudaBuffer {
 public:
+  CudaBuffer() = default;
+
   virtual ~CudaBuffer() = default;
+
+  CudaBuffer(const CudaBuffer&) = delete;
+  CudaBuffer& operator=(const CudaBuffer&) = delete;
+  CudaBuffer(CudaBuffer&&) = delete;
+  CudaBuffer& operator=(CudaBuffer&&) = delete;
 
   virtual size_t size() const = 0;
 

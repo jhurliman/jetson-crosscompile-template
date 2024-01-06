@@ -2,10 +2,12 @@
 
 #include <cstring>
 
+// NOLINTBEGIN(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+
 tl::expected<std::unique_ptr<CudaBufferDevice>, StreamError> CudaBufferDevice::create(
   size_t byteSize, cudaStream_t stream) {
   (void)stream;
-  void* data = malloc(byteSize);
+  void* data = ::malloc(byteSize);
   if (data == nullptr) {
     return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "malloc failed"});
   }
@@ -19,7 +21,7 @@ CudaBufferDevice::CudaBufferDevice(void* data, size_t byteSize, cudaStream_t str
 
 CudaBufferDevice::~CudaBufferDevice() {
   (void)stream_;
-  free(data_);
+  ::free(data_);
 }
 
 size_t CudaBufferDevice::size() const {
@@ -77,3 +79,5 @@ std::optional<StreamError> CudaBufferDevice::memset(
   ::memset(dstPtr, int(value), count);
   return {};
 }
+
+// NOLINTEND(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)

@@ -8,6 +8,8 @@ public:
   static tl::expected<std::unique_ptr<CudaBufferDevice2D>, StreamError> create(
     size_t width, size_t height, cudaStream_t stream);
 
+  ~CudaBufferDevice2D() override = default;
+
   size_t size() const override;
   size_t width() const override;
   size_t height() const override;

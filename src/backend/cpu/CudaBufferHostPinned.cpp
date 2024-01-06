@@ -2,10 +2,12 @@
 
 #include <cstring>
 
+// NOLINTBEGIN(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+
 tl::expected<std::unique_ptr<CudaBufferHostPinned>, StreamError> CudaBufferHostPinned::create(
   size_t byteSize, uint flags) {
   (void)flags;
-  std::byte* data = static_cast<std::byte*>(malloc(byteSize));
+  std::byte* data = static_cast<std::byte*>(::malloc(byteSize));
   if (data == nullptr) {
     return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "malloc failed"});
   }
@@ -83,3 +85,5 @@ std::optional<StreamError> CudaBufferHostPinned::memset(
   ::memset(dstPtr, int(value), count);
   return {};
 }
+
+// NOLINTEND(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)

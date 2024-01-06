@@ -30,11 +30,15 @@ public:
 
   size_t byteOffset() const { return byteOffset_; }
 
+  // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
+
   T* data() { return reinterpret_cast<T*>(static_cast<std::byte*>(data_) + byteOffset_); }
 
   const T* data() const {
     return reinterpret_cast<const T*>(static_cast<const std::byte*>(data_) + byteOffset_);
   }
+
+  // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
   bool isDevice() const { return isDevice_; }
 

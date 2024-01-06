@@ -2,10 +2,12 @@
 
 #include <cstring>
 
+// NOLINTBEGIN(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+
 tl::expected<std::unique_ptr<CudaBufferUnified>, StreamError> CudaBufferUnified::create(
   size_t byteSize, CudaMemAttachFlag flag) {
   (void)flag;
-  void* data = malloc(byteSize);
+  void* data = ::malloc(byteSize);
   if (data == nullptr) {
     return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "malloc failed"});
   }
@@ -29,7 +31,7 @@ CudaBufferUnified::CudaBufferUnified(void* data, size_t byteSize)
     data_(static_cast<std::byte*>(data)) {}
 
 CudaBufferUnified::~CudaBufferUnified() {
-  free(data_);
+  ::free(data_);
 }
 
 size_t CudaBufferUnified::size() const {
@@ -101,3 +103,5 @@ std::optional<StreamError> CudaBufferUnified::prefetch(
   (void)stream;
   return {};
 }
+
+// NOLINTEND(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)

@@ -21,8 +21,9 @@ test-cpu: host
 test-cuda: host
 	./build/host/tests/unit_tests_cuda
 
-tidy:
-	clang-tidy -p build/host --config-file=.clang-tidy --use-color $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
+# Run clang-tidy on host
+tidy: host
+	clang-tidy -p build/host --config-file=.clang-tidy --use-color $$(find include/ -name '*.hpp') $$(find src/ -name '*.cpp')
 
 # Clean up build directories
 clean:
