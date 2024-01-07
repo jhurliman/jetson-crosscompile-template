@@ -53,6 +53,6 @@ private:
   CudaBufferHostPinned(CudaBufferHostPinned&&) = delete;
   CudaBufferHostPinned& operator=(CudaBufferHostPinned&&) = delete;
 
-  size_t size_ = 0;
-  std::byte* data_ = nullptr;
+  size_t size_;
+  std::byte* data_;
 };

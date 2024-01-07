@@ -27,3 +27,14 @@
         StreamError{maybeErr->errorCode, maybeErr->errorMessage, __FILE__, __LINE__});             \
     }                                                                                              \
   } while (false)
+
+#define CUDA_CHECK_PREVIOUS_ERROR()                                                                \
+  do {                                                                                             \
+    const cudaError_t prevError = cudaGetLastError();                                              \
+    if (prevError != cudaSuccess) {                                                                \
+      return StreamError{prevError,                                                                \
+        std::string{"Previous error: "} + cudaGetErrorString(prevError),                           \
+        __FILE__,                                                                                  \
+        __LINE__};                                                                                 \
+    }                                                                                              \
+  } while (false)

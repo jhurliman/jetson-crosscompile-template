@@ -27,6 +27,11 @@ std::optional<StreamError> ensureInitialized() {
   return {};
 }
 
+std::optional<StreamError> checkLastError() {
+  // No-op in a CPU-only context
+  return {};
+}
+
 tl::expected<cudaStream_t, StreamError> createStream(
   const std::string_view name, const StreamPriority priority) {
   // Generate a unique stream ID

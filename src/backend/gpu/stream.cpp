@@ -24,19 +24,16 @@ std::optional<StreamError> ensureInitialized() {
   // Ensure mapped pinned allocations are supported
   int canMapHostMemory;
   CUDA_OPTIONAL(cudaDeviceGetAttribute(&canMapHostMemory, cudaDevAttrCanMapHostMemory, device));
-
-  int concurrentManagedAccess;
-  CUDA_OPTIONAL(
-    cudaDeviceGetAttribute(&concurrentManagedAccess, cudaDevAttrConcurrentManagedAccess, device));
-
   if (!canMapHostMemory) {
     return StreamError{cudaErrorUnknown, "Device does not support mapped pinned allocations"};
   }
 
-  if (!concurrentManagedAccess) {
-    return StreamError{cudaErrorUnknown, "Device does not support concurrent managed access"};
-  }
+  return {};
+}
 
+std::optional<StreamError> checkLastError() {
+  const auto err = cudaGetLastError();
+  if (err != cudaSuccess) { return StreamError{err, cudaGetErrorString(err)}; }
   return {};
 }
 

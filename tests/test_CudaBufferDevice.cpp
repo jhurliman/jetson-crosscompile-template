@@ -26,6 +26,9 @@ TEST_CASE("Allocates CudaBufferDevice", "[cudabuffer]") {
   REQUIRE(bufPtr->size() == 16 * 1024 * 1024);
   REQUIRE(bufPtr->isDevice());
   REQUIRE(bufPtr->cudaData() != nullptr);
+
+  bufPtr.reset();
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferDevice copyFromHost/copyToHost", "[cudabuffer]") {
@@ -96,6 +99,7 @@ TEST_CASE("CudaBufferDevice copyFromHost/copyToHost", "[cudabuffer]") {
 
   buf.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferDevice copyFrom CudaBufferDevice", "[cudabuffer]") {
@@ -176,6 +180,7 @@ TEST_CASE("CudaBufferDevice copyFrom CudaBufferDevice", "[cudabuffer]") {
   bufSrc.reset();
   bufDst.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferDevice copyTo CudaBufferDevice", "[cudabuffer]") {
@@ -256,6 +261,7 @@ TEST_CASE("CudaBufferDevice copyTo CudaBufferDevice", "[cudabuffer]") {
   bufSrc.reset();
   bufDst.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferDevice memset", "[cudabuffer]") {
@@ -288,4 +294,5 @@ TEST_CASE("CudaBufferDevice memset", "[cudabuffer]") {
 
   buf.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }

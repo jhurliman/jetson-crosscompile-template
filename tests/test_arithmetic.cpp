@@ -41,4 +41,6 @@ TEST_CASE("Addition works correctly", "[math]") {
 
   std::vector<int64_t> vecExpected{7, 9, 11, 13, 15};
   REQUIRE(vecC == vecExpected);
+
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }

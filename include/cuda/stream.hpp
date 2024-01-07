@@ -11,6 +11,8 @@ namespace cuda {
 
 std::optional<StreamError> ensureInitialized();
 
+std::optional<StreamError> checkLastError();
+
 tl::expected<cudaStream_t, StreamError> createStream(
   const std::string_view name, const StreamPriority priority);
 

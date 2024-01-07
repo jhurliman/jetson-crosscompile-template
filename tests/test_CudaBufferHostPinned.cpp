@@ -27,6 +27,9 @@ TEST_CASE("Allocates CudaBufferHostPinned", "[cudabuffer]") {
   REQUIRE(bufPtr->size() == 16 * 1024 * 1024);
   REQUIRE_FALSE(bufPtr->isDevice());
   REQUIRE(bufPtr->cudaData() != nullptr);
+
+  bufPtr.reset();
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferHostPinned copyFromHost/copyToHost", "[cudabuffer]") {
@@ -97,6 +100,7 @@ TEST_CASE("CudaBufferHostPinned copyFromHost/copyToHost", "[cudabuffer]") {
 
   buf.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferHostPinned copyFrom CudaBufferHostPinned", "[cudabuffer]") {
@@ -177,6 +181,7 @@ TEST_CASE("CudaBufferHostPinned copyFrom CudaBufferHostPinned", "[cudabuffer]") 
   bufSrc.reset();
   bufDst.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferHostPinned copyTo CudaBufferHostPinned", "[cudabuffer]") {
@@ -257,6 +262,7 @@ TEST_CASE("CudaBufferHostPinned copyTo CudaBufferHostPinned", "[cudabuffer]") {
   bufSrc.reset();
   bufDst.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferHostPinned copyTo CudaBufferDevice", "[cudabuffer]") {
@@ -333,6 +339,7 @@ TEST_CASE("CudaBufferHostPinned copyTo CudaBufferDevice", "[cudabuffer]") {
   bufSrc.reset();
   bufDst.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 void runCudaBufferHostPinnedCopyFromCudaBufferDevice(CudaHostPinnedFlags flags) {
@@ -402,6 +409,7 @@ void runCudaBufferHostPinnedCopyFromCudaBufferDevice(CudaHostPinnedFlags flags) 
   bufSrc.reset();
   bufDst.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferHostPinned copyFrom CudaBufferDevice", "[cudabuffer]") {
@@ -442,4 +450,5 @@ TEST_CASE("CudaBufferHostPinned memset", "[cudabuffer]") {
 
   buf.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }

@@ -22,7 +22,7 @@ public:
   void* cudaData() override;
   const void* cudaData() const override;
 
-  bool isDevice() const override { return true; }
+  bool isDevice() const override;
 
   const std::byte* hostData() const;
   std::byte* hostData();
@@ -53,7 +53,7 @@ public:
   std::optional<StreamError> prefetch(CudaMemAttachFlag flag, cudaStream_t stream);
 
 private:
-  CudaBufferUnified(void* data, size_t byteSize);
+  CudaBufferUnified(void* data, size_t byteSize, bool isDevice);
 
   CudaBufferUnified(const CudaBufferUnified&) = delete;
   CudaBufferUnified& operator=(const CudaBufferUnified&) = delete;
@@ -61,6 +61,7 @@ private:
   CudaBufferUnified(CudaBufferUnified&&) = delete;
   CudaBufferUnified& operator=(CudaBufferUnified&&) = delete;
 
-  size_t size_ = 0;
-  std::byte* data_ = nullptr;
+  size_t size_;
+  std::byte* data_;
+  bool isDevice_;
 };

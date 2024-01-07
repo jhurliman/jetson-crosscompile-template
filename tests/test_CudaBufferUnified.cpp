@@ -13,7 +13,7 @@ TEST_CASE("Allocates CudaBufferUnified", "[cudabuffer]") {
     bufPtr = REQUIRE_EXPECTED(CudaBufferUnified::create(i));
     REQUIRE(bufPtr);
     REQUIRE(bufPtr->size() == i);
-    REQUIRE(bufPtr->isDevice());
+    // REQUIRE(bufPtr->isDevice()); // Can be host memory if UM is unsupported
     if (i == 0) {
       REQUIRE(bufPtr->cudaData() == nullptr);
     } else {
@@ -25,8 +25,11 @@ TEST_CASE("Allocates CudaBufferUnified", "[cudabuffer]") {
   bufPtr = REQUIRE_EXPECTED(CudaBufferUnified::create(16 * 1024 * 1024));
   REQUIRE(bufPtr);
   REQUIRE(bufPtr->size() == 16 * 1024 * 1024);
-  REQUIRE(bufPtr->isDevice());
+  // REQUIRE(bufPtr->isDevice()); // Can be host memory if UM is unsupported
   REQUIRE(bufPtr->cudaData() != nullptr);
+
+  bufPtr.reset();
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferUnified copyFromHost/copyToHost", "[cudabuffer]") {
@@ -96,6 +99,7 @@ TEST_CASE("CudaBufferUnified copyFromHost/copyToHost", "[cudabuffer]") {
 
   buf.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferUnified copyFrom CudaBufferUnified", "[cudabuffer]") {
@@ -176,6 +180,7 @@ TEST_CASE("CudaBufferUnified copyFrom CudaBufferUnified", "[cudabuffer]") {
   bufSrc.reset();
   bufDst.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferUnified copyTo CudaBufferUnified", "[cudabuffer]") {
@@ -256,6 +261,7 @@ TEST_CASE("CudaBufferUnified copyTo CudaBufferUnified", "[cudabuffer]") {
   bufSrc.reset();
   bufDst.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferUnified copyTo CudaBufferDevice", "[cudabuffer]") {
@@ -332,6 +338,7 @@ TEST_CASE("CudaBufferUnified copyTo CudaBufferDevice", "[cudabuffer]") {
   bufSrc.reset();
   bufDst.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 void runCudaBufferUnifiedCopyFromCudaBufferDevice(CudaMemAttachFlag flag) {
@@ -401,6 +408,7 @@ void runCudaBufferUnifiedCopyFromCudaBufferDevice(CudaMemAttachFlag flag) {
   bufSrc.reset();
   bufDst.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
 TEST_CASE("CudaBufferUnified copyFrom CudaBufferDevice", "[cudabuffer]") {
@@ -439,4 +447,5 @@ TEST_CASE("CudaBufferUnified memset", "[cudabuffer]") {
 
   buf.reset();
   REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  REQUIRE_NO_ERROR(cuda::checkLastError());
 }

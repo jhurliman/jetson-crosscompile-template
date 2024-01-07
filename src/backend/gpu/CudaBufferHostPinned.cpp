@@ -71,8 +71,12 @@ std::optional<StreamError> CudaBufferHostPinned::copyToHost(
   void* dst, size_t srcOffset, size_t count, cudaStream_t stream, bool synchronize) const {
   void* dstPtr = static_cast<std::byte*>(dst);
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
-  CUDA_OPTIONAL(cudaMemcpyAsync(dstPtr, srcPtr, count, cudaMemcpyHostToHost, stream));
-  if (synchronize) { CUDA_OPTIONAL(cudaStreamSynchronize(stream)); }
+  if (synchronize) {
+    CUDA_OPTIONAL(cudaStreamSynchronize(stream));
+    CUDA_OPTIONAL(cudaMemcpy(dstPtr, srcPtr, count, cudaMemcpyHostToHost));
+  } else {
+    CUDA_OPTIONAL(cudaMemcpyAsync(dstPtr, srcPtr, count, cudaMemcpyHostToHost, stream));
+  }
   return {};
 }
 
