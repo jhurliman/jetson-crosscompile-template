@@ -7,6 +7,9 @@
 tl::expected<std::unique_ptr<CudaBufferDevice>, StreamError> CudaBufferDevice::create(
   size_t byteSize, cudaStream_t stream) {
   (void)stream;
+  if (byteSize == 0) {
+    return std::unique_ptr<CudaBufferDevice>(new CudaBufferDevice(nullptr, 0, stream));
+  }
   void* data = ::malloc(byteSize);
   if (data == nullptr) {
     return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "malloc failed"});

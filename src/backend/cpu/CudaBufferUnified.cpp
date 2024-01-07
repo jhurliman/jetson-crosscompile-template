@@ -7,6 +7,9 @@
 tl::expected<std::unique_ptr<CudaBufferUnified>, StreamError> CudaBufferUnified::create(
   size_t byteSize, CudaMemAttachFlag flag) {
   (void)flag;
+  if (byteSize == 0) {
+    return std::unique_ptr<CudaBufferUnified>(new CudaBufferUnified(nullptr, 0));
+  }
   void* data = ::malloc(byteSize);
   if (data == nullptr) {
     return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "malloc failed"});

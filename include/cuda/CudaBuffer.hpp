@@ -20,8 +20,9 @@ public:
 
   CudaBuffer(const CudaBuffer&) = delete;
   CudaBuffer& operator=(const CudaBuffer&) = delete;
-  CudaBuffer(CudaBuffer&&) = delete;
-  CudaBuffer& operator=(CudaBuffer&&) = delete;
+
+  CudaBuffer(CudaBuffer&&) = default;
+  CudaBuffer& operator=(CudaBuffer&&) = default;
 
   virtual size_t size() const = 0;
 

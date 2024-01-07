@@ -1,4 +1,4 @@
-file(GLOB_RECURSE TEST_SOURCES "test_*.cpp")
+file(GLOB_RECURSE TEST_SOURCES "test_*.cpp" "main.cpp")
 
 if(COMPILE_CPU)
   add_executable(unit_tests_cpu ${TEST_SOURCES})

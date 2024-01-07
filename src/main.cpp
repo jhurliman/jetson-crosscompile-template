@@ -27,9 +27,9 @@ template<typename T> CudaArrayView<T> Buf2View(CudaBufferUnified& buf) {
 int main() {
   std::cout << "Adding two vectors\n";
 
-  auto streamRes = createStream("test", StreamPriority::Normal);
+  auto streamRes = cuda::createStream("test", StreamPriority::Normal);
   if (!streamRes) {
-    std::cerr << "Error: " << streamRes.error().errorMessage << "\n";
+    std::cerr << "createdStream failed: " << streamRes.error().errorMessage << "\n";
     return 1;
   }
   cudaStream_t stream = streamRes.value();
@@ -44,15 +44,23 @@ int main() {
 
   auto err = addVectors(viewA, viewB, viewC, stream);
   if (err) {
-    std::cerr << "Error: " << err.value().errorMessage << "\n";
+    std::cerr << "addVectors failed: " << err.value().errorMessage << "\n";
     return 1;
   }
 
   constexpr size_t n = 5;
   std::vector<int64_t> vecC(n);
   err = bufC->copyToHost(vecC.data(), 0, vecC.size() * sizeof(int64_t), stream);
+  if (err) {
+    std::cerr << "copyToHost failed: " << err.value().errorMessage << "\n";
+    return 1;
+  }
 
-  destroyStream(stream);
+  err = cuda::destroyStream(stream);
+  if (err) {
+    std::cerr << "destroyStream failed: " << err.value().errorMessage << "\n";
+    return 1;
+  }
 
   // print the first element, then a comma and a space for the rest
   std::cout << "Result: " << vecC[0];

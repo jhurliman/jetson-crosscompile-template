@@ -2,9 +2,9 @@
 
 tl::expected<std::unique_ptr<CudaBufferDevice2D>, StreamError> CudaBufferDevice2D::create(
   size_t width, size_t height, cudaStream_t stream) {
-  return CudaBufferDevice::create(width * height, stream).map([&](auto&& buffer) { // NOLINT
+  return CudaBufferDevice::create(width * height, stream).map([&](auto&& bufferPtr) { // NOLINT
     return std::unique_ptr<CudaBufferDevice2D>(
-      new CudaBufferDevice2D(std::move(buffer), width, height));
+      new CudaBufferDevice2D(std::move(bufferPtr), width, height));
   });
 }
 
