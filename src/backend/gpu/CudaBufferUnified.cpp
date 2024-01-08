@@ -27,9 +27,10 @@ tl::expected<std::unique_ptr<CudaBufferUnified>, StreamError> CudaBufferUnified:
   CUDA_EXPECTED_INIT();
   const auto res = SupportsUnifiedMemory();
   if (!res) { return tl::make_unexpected(res.error()); }
+  const bool supportsUnifiedMemory = res.value();
 
   void* data;
-  if (!res.value()) {
+  if (!supportsUnifiedMemory) {
     // This device does not support Unified Memory (Windows/WSL, or pre-2012 GPU). Fall back to
     // CudaBufferHostPinned which provides direct access to the host memory
     CUDA_EXPECTED(cudaMallocHost(&data, byteSize, uint(CudaHostPinnedFlags::Mapped)));

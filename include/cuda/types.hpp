@@ -46,6 +46,13 @@ constexpr cudaError_t cudaErrorMemoryAllocation = 2;
 
 #include <optional>
 
+enum class CudaDeviceSchedule {
+  Auto = 0,
+  Spin = 1,
+  Yield = 2,
+  BlockingSync = 4,
+};
+
 enum class CudaMemAttachFlag {
   Global = 1,
   Host = 2,

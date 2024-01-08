@@ -9,7 +9,8 @@
 
 namespace cuda {
 
-std::optional<StreamError> ensureInitialized();
+std::optional<StreamError> ensureInitialized(
+  CudaDeviceSchedule schedule = CudaDeviceSchedule::Auto);
 
 std::optional<StreamError> checkLastError();
 
