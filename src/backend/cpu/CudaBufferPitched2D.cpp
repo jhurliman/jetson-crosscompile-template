@@ -10,13 +10,15 @@ tl::expected<std::unique_ptr<CudaBufferPitched2D>, StreamError> CudaBufferPitche
     return std::unique_ptr<CudaBufferPitched2D>(
       new CudaBufferPitched2D(nullptr, widthBytes, height, widthBytes));
   }
-  const size_t byteSize = widthBytes * height;
+  constexpr size_t alignment = 512;
+  const size_t pitch = ((widthBytes + alignment - 1) / alignment) * alignment;
+  const size_t byteSize = pitch * height;
   void* data = ::malloc(byteSize);
   if (data == nullptr) {
     return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "malloc failed"});
   }
   return std::unique_ptr<CudaBufferPitched2D>(
-    new CudaBufferPitched2D(data, widthBytes, height, widthBytes));
+    new CudaBufferPitched2D(data, widthBytes, height, pitch));
 }
 
 CudaBufferPitched2D::~CudaBufferPitched2D() {
@@ -24,7 +26,7 @@ CudaBufferPitched2D::~CudaBufferPitched2D() {
 }
 
 size_t CudaBufferPitched2D::size() const {
-  return widthBytes_ * height_;
+  return pitch_ * height_;
 }
 
 size_t CudaBufferPitched2D::widthBytes() const {
@@ -160,6 +162,7 @@ std::optional<StreamError> CudaBufferPitched2D::copyTo2D(CudaBuffer2D& dst,
 }
 
 std::optional<StreamError> CudaBufferPitched2D::copyToHost2D(void* dst,
+  size_t dstPitch,
   size_t srcX,
   size_t srcY,
   size_t widthBytes,
@@ -169,13 +172,14 @@ std::optional<StreamError> CudaBufferPitched2D::copyToHost2D(void* dst,
   (void)synchronize;
 
   // Check if this can be done as a single copy
-  if (pitch() == widthBytes) {
+  if (dstPitch == widthBytes && pitch() == dstPitch) {
     return copyToHost(dst, srcY * pitch() + srcX, widthBytes * height, stream, false);
   }
 
   // Otherwise, copy row by row
-  for (size_t y = 0; y < height; ++y) {
-    const auto err = copyToHost(dst, (srcY + y) * pitch() + srcX, widthBytes, stream, false);
+  for (size_t y = 0; y < height; y++) {
+    void* dstPtr = static_cast<std::byte*>(dst) + y * dstPitch;
+    const auto err = copyToHost(dstPtr, (srcY + y) * pitch() + srcX, widthBytes, stream, false);
     if (err) { return err; }
   }
 

@@ -447,3 +447,110 @@ TEST_CASE("CudaBufferPitched2D memset", "[cudabuffer]") {
   if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
+
+TEST_CASE("CudaBufferPitched2D copyFrom2D CudaBufferPitched2D", "[cudabuffer2d]") {
+  // To test copyFrom2D we allocate three CudaBufferPitched2Ds, two with matching dimensions and
+  // one with different height, width, and pitch. We copy data from the first to the second, then
+  // copy the data back to the host and check it. Then from the first to the third, then back to the
+  // host and check it. Do this for a variety of srcX, srcY, dstX, dstY, widthBytes, and height
+  // values
+
+  std::vector<std::byte> srcVec(256);
+  std::vector<std::byte> dstVec(256);
+  for (size_t i = 0; i < 256; i++) {
+    srcVec[i] = std::byte(i);
+    dstVec[i] = std::byte(0);
+  }
+
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
+
+  std::unique_ptr<CudaBufferPitched2D> bufSrc1 =
+    REQUIRE_EXPECTED(CudaBufferPitched2D::create(16, 16));
+  std::unique_ptr<CudaBufferPitched2D> bufSrc2 =
+    REQUIRE_EXPECTED(CudaBufferPitched2D::create(7, 3));
+  std::unique_ptr<CudaBufferPitched2D> bufDst =
+    REQUIRE_EXPECTED(CudaBufferPitched2D::create(16, 16));
+
+  constexpr size_t PITCH = 512;
+
+  CHECK(bufSrc1->pitch() == PITCH);
+  CHECK(bufSrc1->size() == PITCH * 16);
+  CHECK(bufSrc2->pitch() == PITCH);
+  CHECK(bufSrc2->size() == PITCH * 3);
+  CHECK(bufDst->pitch() == PITCH);
+  CHECK(bufDst->size() == PITCH * 16);
+
+  SECTION("Copy one byte") {
+    for (size_t srcY = 0; srcY < 16; srcY++) {
+      for (size_t srcX = 0; srcX < 16; srcX++) {
+        for (size_t dstY = 0; dstY < 16; dstY++) {
+          for (size_t dstX = 0; dstX < 16; dstX++) {
+            const size_t srcI = srcY * bufSrc1->pitch() + srcX;
+            const size_t dstI = dstY * bufDst->pitch() + dstX;
+            REQUIRE_NO_ERROR(bufSrc1->copyFromHost(srcVec.data() + srcI, srcI, 1, stream));
+            REQUIRE_NO_ERROR(bufDst->copyFrom2D(*bufSrc1, srcX, srcY, dstX, dstY, 1, 1, stream));
+            REQUIRE_NO_ERROR(bufDst->copyToHost2D(dstVec.data(), 16, dstX, dstY, 1, 1, stream));
+            // srcVec[srcI] == dstVec[dstI]
+            CAPTURE(srcX, srcY, dstX, dstY);
+            CAPTURE(srcVec);
+            CAPTURE(dstVec);
+            REQUIRE(srcVec[srcI] == dstVec[dstI]);
+          }
+        }
+      }
+    }
+  }
+
+  bufSrc1.reset();
+  bufSrc2.reset();
+  bufDst.reset();
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
+  REQUIRE_NO_ERROR(cuda::checkLastError());
+}
+
+// std::optional<StreamError> CudaBufferPitched2D::copyFromHost2D(const void* src,
+//   size_t srcPitch,
+//   size_t dstX,
+//   size_t dstY,
+//   size_t widthBytes,
+//   size_t height,
+//   cudaStream_t stream) {
+//   void* dstPtr = static_cast<std::byte*>(data_) + dstY * pitch() + dstX;
+//   CUDA_OPTIONAL(cudaMemcpy2DAsync(
+//     dstPtr, pitch(), src, srcPitch, widthBytes, height, cudaMemcpyHostToDevice, stream));
+//   return {};
+// }
+
+// std::optional<StreamError> CudaBufferPitched2D::copyTo2D(CudaBuffer2D& dst,
+//   size_t srcX,
+//   size_t srcY,
+//   size_t dstX,
+//   size_t dstY,
+//   size_t widthBytes,
+//   size_t height,
+//   cudaStream_t stream) const {
+//   void* dstPtr = static_cast<std::byte*>(dst.cudaData()) + dstY * dst.pitch() + dstX;
+//   const void* srcPtr = static_cast<const std::byte*>(data_) + srcY * pitch() + srcX;
+//   const auto copyType = dst.isDevice() ? cudaMemcpyDeviceToDevice : cudaMemcpyDeviceToHost;
+//   CUDA_OPTIONAL(
+//     cudaMemcpy2DAsync(dstPtr, dst.pitch(), srcPtr, pitch(), widthBytes, height, copyType,
+//     stream));
+//   return {};
+// }
+
+// std::optional<StreamError> CudaBufferPitched2D::copyToHost2D(void* dst,
+//   size_t srcX,
+//   size_t srcY,
+//   size_t widthBytes,
+//   size_t height,
+//   cudaStream_t stream,
+//   bool synchronize) const {
+//   void* dstPtr = static_cast<std::byte*>(dst);
+//   const void* srcPtr = static_cast<const std::byte*>(data_) + srcY * pitch() + srcX;
+//   CUDA_OPTIONAL(cudaMemcpy2DAsync(
+//     dstPtr, widthBytes, srcPtr, pitch(), widthBytes, height, cudaMemcpyDeviceToHost, stream));
+//   if (synchronize) { CUDA_OPTIONAL(cudaStreamSynchronize(stream)); }
+//   return {};
+// }

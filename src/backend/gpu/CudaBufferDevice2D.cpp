@@ -132,6 +132,7 @@ std::optional<StreamError> CudaBufferDevice2D::copyTo2D(CudaBuffer2D& dst,
 }
 
 std::optional<StreamError> CudaBufferDevice2D::copyToHost2D(void* dst,
+  size_t dstPitch,
   size_t srcX,
   size_t srcY,
   size_t widthBytes,
@@ -139,7 +140,7 @@ std::optional<StreamError> CudaBufferDevice2D::copyToHost2D(void* dst,
   cudaStream_t stream,
   bool synchronize) const {
   // Check if this can be done as a single copy
-  if (pitch() == widthBytes) {
+  if (dstPitch == widthBytes && pitch() == widthBytes) {
     return copyToHost(dst, srcY * pitch() + srcX, widthBytes * height, stream, false);
   }
 

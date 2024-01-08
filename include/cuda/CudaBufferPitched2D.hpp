@@ -71,6 +71,7 @@ public:
     cudaStream_t stream) const override;
 
   std::optional<StreamError> copyToHost2D(void* dst,
+    size_t dstPitch,
     size_t srcX,
     size_t srcY,
     size_t widthBytes,
