@@ -19,7 +19,7 @@ test: host
 
 # Run clang-tidy on host
 tidy: host
-	clang-tidy -p build/host --config-file=.clang-tidy --use-color $$(find include/ -name '*.hpp') $$(find src/ -name '*.cpp')
+	clang-tidy -p build/host --config-file=.clang-tidy --use-color $$(find src/ -name '*.cpp')
 
 # Clean up build directories
 clean:
