@@ -3,6 +3,8 @@
 #include "CudaBuffer2D.hpp"
 #include "CudaBufferDevice.hpp"
 
+#include <tl/expected.hpp>
+
 class CudaBufferDevice2D : public CudaBuffer2D {
 public:
   static tl::expected<std::unique_ptr<CudaBufferDevice2D>, StreamError> create(

@@ -2,6 +2,8 @@
 
 #include "CudaBuffer2D.hpp"
 
+#include <tl/expected.hpp>
+
 #include <memory>
 
 class CudaBufferPitched2D : public CudaBuffer2D {

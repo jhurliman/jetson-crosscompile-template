@@ -2,8 +2,6 @@
 
 #include "types.hpp"
 
-#include <tl/expected.hpp>
-
 #include <cstddef>
 #include <cstdint>
 #include <optional>

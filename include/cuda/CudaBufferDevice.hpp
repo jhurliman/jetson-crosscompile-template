@@ -2,6 +2,8 @@
 
 #include "CudaBuffer.hpp"
 
+#include <tl/expected.hpp>
+
 #include <memory>
 
 class CudaBufferDevice : public CudaBuffer {
