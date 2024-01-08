@@ -3,7 +3,7 @@
     {
       "name": "Linux",
       "includePath": ["${workspaceFolder}/**"],
-      "defines": ["USE_GPU"],
+      "defines": ["__INTELLISENSE__", "USE_GPU"],
       "compilerPath": "/usr/bin/clang++",
       "cStandard": "c23",
       "cppStandard": "c++20",
@@ -17,7 +17,7 @@
         "${workspaceFolder}/sysroot/jetson-t210/usr/include/aarch64-linux-gnu/**",
         "${workspaceFolder}/sysroot/jetson-t210/usr/local/cuda-10.2/targets/aarch64-linux/include/**"
       ],
-      "defines": ["USE_GPU", "USE_T210"],
+      "defines": ["__INTELLISENSE__", "USE_GPU", "USE_T210"],
       "compilerPath": "/usr/bin/clang++",
       "compilerArgs": [
         "--target=aarch64-linux-gnu",

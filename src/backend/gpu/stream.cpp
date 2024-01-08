@@ -6,13 +6,13 @@
 
 namespace cuda {
 
-std::optional<StreamError> ensureInitialized() {
+std::optional<StreamError> ensureInitialized(CudaDeviceSchedule schedule) {
   static bool initialized = false;
   if (initialized) { return {}; }
   initialized = true;
 
   // Set the device flags
-  CUDA_OPTIONAL(cudaSetDeviceFlags(cudaDeviceScheduleSpin | cudaDeviceMapHost));
+  CUDA_OPTIONAL(cudaSetDeviceFlags(uint(schedule) | cudaDeviceMapHost));
 
   // Initialize the CUDA runtime
   CUDA_OPTIONAL(cudaFree(nullptr));

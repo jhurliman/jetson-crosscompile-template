@@ -7,3 +7,5 @@ struct ArgumentError {
 
   ArgumentError(const std::string& message) : errorMessage(message) {}
 };
+
+void InstallStackTraceHandler();

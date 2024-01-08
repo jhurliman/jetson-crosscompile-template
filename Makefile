@@ -1,4 +1,4 @@
-.PHONY: all host jetson-nano test-cpu test-cuda tidy clean
+.PHONY: all host host-cpu jetson-nano test test-cpu tidy clean
 
 # Default to building for host
 all: host
@@ -8,22 +8,26 @@ host:
 	cmake --preset host
 	cmake --build build/host
 
+# Build for host (CPU only)
+host-cpu:
+	cmake --preset host-cpu
+	cmake --build build/host
+
 # Build for jetson-nano
 jetson-nano:
 	cmake --preset jetson-nano
 	cmake --build build/jetson-nano
 
-# Test CPU backend on host
-test-cpu: host
-	./build/host/tests/unit_tests_cpu
+# Test CPU and CUDA backends on host
+test: host
+	ctest --preset host
 
-# Test CUDA backend on host
-test-cuda: host
-	./build/host/tests/unit_tests_cuda
+test-cpu: host-cpu
+	ctest --preset host-cpu
 
 # Run clang-tidy on host
 tidy: host
-	clang-tidy -p build/host --config-file=.clang-tidy --use-color $$(find include/ -name '*.hpp') $$(find src/ -name '*.cpp')
+	clang-tidy -p build/host --config-file=.clang-tidy --use-color $$(find src/ -name '*.cpp')
 
 # Clean up build directories
 clean:

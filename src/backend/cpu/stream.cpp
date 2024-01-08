@@ -22,8 +22,9 @@ std::unordered_map<uint64_t, std::pair<std::string, StreamPriority>> gStreamIdMa
 // Mutex to protect access to the gStreamIdToNameMap
 std::mutex gMapMutex;
 
-std::optional<StreamError> ensureInitialized() {
+std::optional<StreamError> ensureInitialized(CudaDeviceSchedule schedule) {
   // No-op in a CPU-only context
+  (void)schedule;
   return {};
 }
 

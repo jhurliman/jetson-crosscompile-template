@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cuda/stream.hpp"
+
 #include <cuda_runtime_api.h>
 #include <tl/expected.hpp>
 
@@ -38,3 +40,23 @@
         __LINE__};                                                                                 \
     }                                                                                              \
   } while (false)
+
+#ifdef __INTELLISENSE__
+
+#define CUDA_KERNEL(kernel, numBlocks, blockSize, sharedMemSize, stream, ...)                      \
+  do {                                                                                             \
+    CUDA_CHECK_PREVIOUS_ERROR();                                                                   \
+    kernel(__VA_ARGS__);                                                                           \
+    CUDA_OPTIONAL(cudaGetLastError());                                                             \
+  } while (false)
+
+#else
+
+#define CUDA_KERNEL(kernel, numBlocks, blockSize, sharedMemSize, stream, ...)                      \
+  do {                                                                                             \
+    CUDA_CHECK_PREVIOUS_ERROR();                                                                   \
+    kernel<<<numBlocks, blockSize, sharedMemSize, stream>>>(__VA_ARGS__);                          \
+    CUDA_OPTIONAL(cudaGetLastError());                                                             \
+  } while (false)
+
+#endif

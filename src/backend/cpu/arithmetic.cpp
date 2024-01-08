@@ -1,4 +1,4 @@
-#include "arithmetic.hpp"
+#include "cuda/arithmetic.hpp"
 
 #include <algorithm>
 

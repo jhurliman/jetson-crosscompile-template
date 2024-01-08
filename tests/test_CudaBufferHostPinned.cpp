@@ -47,7 +47,9 @@ TEST_CASE("CudaBufferHostPinned copyFromHost/copyToHost", "[cudabuffer]") {
     dstVec[i] = std::byte(0);
   }
 
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
   std::unique_ptr<CudaBufferHostPinned> buf =
     REQUIRE_EXPECTED(CudaBufferHostPinned::create(SIZE_BYTES, CudaHostPinnedFlags::Mapped));
@@ -90,16 +92,10 @@ TEST_CASE("CudaBufferHostPinned copyFromHost/copyToHost", "[cudabuffer]") {
     REQUIRE_NO_ERROR(buf->copyFromHost(srcVec.data(), 0, SIZE_VEC, stream));
     REQUIRE_NO_ERROR(buf->copyToHost(dstVec.data(), 0, SIZE_VEC, stream));
     REQUIRE(srcVec == dstVec);
-
-    buf->memset(std::byte(0), SIZE_BYTES, nullptr);
-
-    REQUIRE_NO_ERROR(buf->copyFromHost(srcVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(buf->copyToHost(dstVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE(srcVec == dstVec);
   }
 
   buf.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
@@ -118,7 +114,9 @@ TEST_CASE("CudaBufferHostPinned copyFrom CudaBufferHostPinned", "[cudabuffer]") 
     dstVec[i] = std::byte(0);
   }
 
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
   std::unique_ptr<CudaBufferHostPinned> bufSrc =
     REQUIRE_EXPECTED(CudaBufferHostPinned::create(SIZE_BYTES, CudaHostPinnedFlags::Mapped));
@@ -168,19 +166,11 @@ TEST_CASE("CudaBufferHostPinned copyFrom CudaBufferHostPinned", "[cudabuffer]") 
     REQUIRE_NO_ERROR(bufDst->copyFrom(*bufSrc, 0, 0, SIZE_VEC, stream));
     REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, stream));
     REQUIRE(srcVec == dstVec);
-
-    bufSrc->memset(std::byte(0), SIZE_BYTES, stream);
-    bufDst->memset(std::byte(0), SIZE_BYTES, nullptr);
-
-    REQUIRE_NO_ERROR(bufSrc->copyFromHost(srcVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufDst->copyFrom(*bufSrc, 0, 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE(srcVec == dstVec);
   }
 
   bufSrc.reset();
   bufDst.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
@@ -199,7 +189,9 @@ TEST_CASE("CudaBufferHostPinned copyTo CudaBufferHostPinned", "[cudabuffer]") {
     dstVec[i] = std::byte(0);
   }
 
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
   std::unique_ptr<CudaBufferHostPinned> bufSrc =
     REQUIRE_EXPECTED(CudaBufferHostPinned::create(SIZE_BYTES, CudaHostPinnedFlags::Mapped));
@@ -249,19 +241,11 @@ TEST_CASE("CudaBufferHostPinned copyTo CudaBufferHostPinned", "[cudabuffer]") {
     REQUIRE_NO_ERROR(bufSrc->copyTo(*bufDst, 0, 0, SIZE_VEC, stream));
     REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, stream));
     REQUIRE(srcVec == dstVec);
-
-    bufSrc->memset(std::byte(0), SIZE_BYTES, stream);
-    bufDst->memset(std::byte(0), SIZE_BYTES, nullptr);
-
-    REQUIRE_NO_ERROR(bufSrc->copyFromHost(srcVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufSrc->copyTo(*bufDst, 0, 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE(srcVec == dstVec);
   }
 
   bufSrc.reset();
   bufDst.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
@@ -276,7 +260,9 @@ TEST_CASE("CudaBufferHostPinned copyTo CudaBufferDevice", "[cudabuffer]") {
     dstVec[i] = std::byte(0);
   }
 
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
   std::unique_ptr<CudaBufferHostPinned> bufSrc =
     REQUIRE_EXPECTED(CudaBufferHostPinned::create(SIZE_BYTES, CudaHostPinnedFlags::Mapped));
@@ -326,32 +312,30 @@ TEST_CASE("CudaBufferHostPinned copyTo CudaBufferDevice", "[cudabuffer]") {
     REQUIRE_NO_ERROR(bufSrc->copyTo(*bufDst, 0, 0, SIZE_VEC, stream));
     REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, stream));
     REQUIRE(srcVec == dstVec);
-
-    bufSrc->memset(std::byte(0), SIZE_BYTES, stream);
-    bufDst->memset(std::byte(0), SIZE_BYTES, nullptr);
-
-    REQUIRE_NO_ERROR(bufSrc->copyFromHost(srcVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufSrc->copyTo(*bufDst, 0, 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE(srcVec == dstVec);
   }
 
   bufSrc.reset();
   bufDst.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
-void runCudaBufferHostPinnedCopyFromCudaBufferDevice(CudaHostPinnedFlags flags) {
+TEST_CASE("CudaBufferHostPinned copyFrom CudaBufferDevice", "[cudabuffer]") {
   constexpr size_t SIZE_BYTES = 256;
   constexpr size_t SIZE_VEC = 128;
+
+  const auto flags = GENERATE(CudaHostPinnedFlags::Default,
+    CudaHostPinnedFlags::Portable,
+    CudaHostPinnedFlags::Mapped,
+    CudaHostPinnedFlags::Portable | CudaHostPinnedFlags::Mapped);
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
   std::vector<std::byte> srcVec(SIZE_VEC);
   for (size_t i = 0; i < SIZE_VEC; i++) {
     srcVec[i] = std::byte(i);
   }
-
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
 
   std::unique_ptr<CudaBufferDevice> bufSrc =
     REQUIRE_EXPECTED(CudaBufferDevice::create(SIZE_BYTES, stream));
@@ -396,34 +380,20 @@ void runCudaBufferHostPinnedCopyFromCudaBufferDevice(CudaHostPinnedFlags flags) 
     REQUIRE_NO_ERROR(bufDst->copyFrom(*bufSrc, 0, 0, SIZE_VEC, stream));
     REQUIRE_NO_ERROR(cuda::synchronizeStream(stream));
     REQUIRE(std::equal(srcVec.begin(), srcVec.end(), bufDst->hostData()));
-
-    bufSrc->memset(std::byte(0), SIZE_BYTES, stream);
-    bufDst->memset(std::byte(0), SIZE_BYTES, nullptr);
-
-    REQUIRE_NO_ERROR(bufSrc->copyFromHost(srcVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufDst->copyFrom(*bufSrc, 0, 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(cuda::synchronizeStream(nullptr));
-    REQUIRE(std::equal(srcVec.begin(), srcVec.end(), bufDst->hostData()));
   }
 
   bufSrc.reset();
   bufDst.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
-}
-
-TEST_CASE("CudaBufferHostPinned copyFrom CudaBufferDevice", "[cudabuffer]") {
-  auto flags = GENERATE(CudaHostPinnedFlags::Default,
-    CudaHostPinnedFlags::Portable,
-    CudaHostPinnedFlags::Mapped,
-    CudaHostPinnedFlags::Portable | CudaHostPinnedFlags::Mapped);
-  runCudaBufferHostPinnedCopyFromCudaBufferDevice(flags);
 }
 
 TEST_CASE("CudaBufferHostPinned memset", "[cudabuffer]") {
   constexpr size_t SIZE_BYTES = 255; // 256 - 1 since 0xFF is used as a sentinel value
 
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
   std::unique_ptr<CudaBufferHostPinned> buf =
     REQUIRE_EXPECTED(CudaBufferHostPinned::create(SIZE_BYTES, CudaHostPinnedFlags::Mapped));
@@ -449,6 +419,6 @@ TEST_CASE("CudaBufferHostPinned memset", "[cudabuffer]") {
   }
 
   buf.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }

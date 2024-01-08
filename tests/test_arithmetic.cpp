@@ -1,5 +1,5 @@
-#include "arithmetic.hpp"
 #include "cuda/CudaBufferUnified.hpp"
+#include "cuda/arithmetic.hpp"
 #include "cuda/stream.hpp"
 #include "requires.hpp"
 
