@@ -23,6 +23,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+cpmaddpackage("gh:fmtlib/fmt#10.2.1")
+cpmaddpackage("gh:jeremy-rifkin/cpptrace@0.3.1")
 cpmaddpackage("gh:TartanLlama/expected@1.1.0")
 
 file(GLOB_RECURSE COMMON_SOURCES "src/backend/common/*.cpp")
@@ -37,7 +39,7 @@ if(COMPILE_CPU)
     backend_cpu
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/cpu)
-  target_link_libraries(backend_cpu PUBLIC tl::expected TBB::tbb)
+  target_link_libraries(backend_cpu PUBLIC cpptrace::cpptrace tl::expected TBB::tbb)
 endif()
 
 if(COMPILE_CUDA)
@@ -50,7 +52,8 @@ if(COMPILE_CUDA)
     backend_cuda
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/gpu)
-  target_link_libraries(backend_cuda PUBLIC tl::expected CUDA::cudart CUDA::nvToolsExt)
+  target_link_libraries(backend_cuda PUBLIC cpptrace::cpptrace tl::expected CUDA::cudart
+                                            CUDA::nvToolsExt)
   set_target_properties(backend_cuda PROPERTIES CUDA_ARCHITECTURES 53 CUDA_SEPARABLE_COMPILATION ON)
   target_compile_definitions(
     backend_cuda PUBLIC -DUSE_GPU -DCUDA_MAJOR=${CUDAToolkit_VERSION_MAJOR}
@@ -67,7 +70,8 @@ if(COMPILE_T210)
     backend_t210
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/gpu)
-  target_link_libraries(backend_t210 PUBLIC tl::expected CUDA::cudart ${CUDA_NVTX_LIBRARY})
+  target_link_libraries(backend_t210 PUBLIC cpptrace::cpptrace tl::expected CUDA::cudart
+                                            ${CUDA_NVTX_LIBRARY})
   set_target_properties(backend_t210 PROPERTIES CUDA_ARCHITECTURES 53 CUDA_SEPARABLE_COMPILATION ON)
   target_compile_definitions(
     backend_t210 PUBLIC -DUSE_GPU -DUSE_T210 -DCUDA_MAJOR=${CUDAToolkit_VERSION_MAJOR}
@@ -77,6 +81,7 @@ endif()
 add_executable(myapp src/main.cpp)
 target_compile_options(myapp PRIVATE ${PROJECT_WARNING_FLAGS})
 target_include_directories(myapp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(myapp PRIVATE fmt::fmt)
 if(COMPILE_T210)
   target_link_libraries(myapp PRIVATE backend_t210)
   target_include_directories(myapp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/backend/gpu)

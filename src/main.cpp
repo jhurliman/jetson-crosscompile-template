@@ -1,6 +1,8 @@
-#include "arithmetic.hpp"
 #include "cuda/CudaBufferUnified.hpp"
+#include "cuda/arithmetic.hpp"
 #include "cuda/stream.hpp"
+
+#include <fmt/format.h>
 
 #include <iostream>
 
@@ -25,6 +27,8 @@ template<typename T> CudaArrayView<T> Buf2View(CudaBufferUnified& buf) {
 }
 
 int main() {
+  InstallStackTraceHandler();
+
   std::cout << "Adding two vectors\n";
 
   auto streamRes = cuda::createStream("test", StreamPriority::Normal);
@@ -62,14 +66,7 @@ int main() {
     return 1;
   }
 
-  // print the first element, then a comma and a space for the rest
-  std::cout << "Result: " << vecC[0];
-#pragma unroll
-  for (size_t i = 1; i < vecC.size(); ++i) {
-    std::cout << ", " << vecC[i];
-  }
-  std::cout << "\n";
-
+  std::cout << "Result:   " << fmt::format("{}", fmt::join(vecC, ", ")) << "\n";
   std::cout << "Expected: 7, 9, 11, 13, 15\n";
   return 0;
 }

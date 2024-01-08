@@ -8,9 +8,11 @@
 TEST_CASE("Allocates CudaBufferUnified", "[cudabuffer]") {
   constexpr size_t COUNT = 128;
 
+  const CudaMemAttachFlag flag = GENERATE(CudaMemAttachFlag::Global, CudaMemAttachFlag::Host);
+
   std::unique_ptr<CudaBufferUnified> bufPtr;
   for (size_t i = 0; i < COUNT; i++) {
-    bufPtr = REQUIRE_EXPECTED(CudaBufferUnified::create(i));
+    bufPtr = REQUIRE_EXPECTED(CudaBufferUnified::create(i, flag));
     REQUIRE(bufPtr);
     REQUIRE(bufPtr->size() == i);
     // REQUIRE(bufPtr->isDevice()); // Can be host memory if UM is unsupported
@@ -22,7 +24,7 @@ TEST_CASE("Allocates CudaBufferUnified", "[cudabuffer]") {
   }
 
   // Test large allocation (16MB)
-  bufPtr = REQUIRE_EXPECTED(CudaBufferUnified::create(16 * 1024 * 1024));
+  bufPtr = REQUIRE_EXPECTED(CudaBufferUnified::create(16 * 1024 * 1024, flag));
   REQUIRE(bufPtr);
   REQUIRE(bufPtr->size() == 16 * 1024 * 1024);
   // REQUIRE(bufPtr->isDevice()); // Can be host memory if UM is unsupported
@@ -47,7 +49,9 @@ TEST_CASE("CudaBufferUnified copyFromHost/copyToHost", "[cudabuffer]") {
     dstVec[i] = std::byte(0);
   }
 
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
   std::unique_ptr<CudaBufferUnified> buf = REQUIRE_EXPECTED(CudaBufferUnified::create(SIZE_BYTES));
 
@@ -89,16 +93,10 @@ TEST_CASE("CudaBufferUnified copyFromHost/copyToHost", "[cudabuffer]") {
     REQUIRE_NO_ERROR(buf->copyFromHost(srcVec.data(), 0, SIZE_VEC, stream));
     REQUIRE_NO_ERROR(buf->copyToHost(dstVec.data(), 0, SIZE_VEC, stream));
     REQUIRE(srcVec == dstVec);
-
-    buf->memset(std::byte(0), SIZE_BYTES, nullptr);
-
-    REQUIRE_NO_ERROR(buf->copyFromHost(srcVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(buf->copyToHost(dstVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE(srcVec == dstVec);
   }
 
   buf.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
@@ -117,7 +115,9 @@ TEST_CASE("CudaBufferUnified copyFrom CudaBufferUnified", "[cudabuffer]") {
     dstVec[i] = std::byte(0);
   }
 
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
   std::unique_ptr<CudaBufferUnified> bufSrc =
     REQUIRE_EXPECTED(CudaBufferUnified::create(SIZE_BYTES));
@@ -167,19 +167,11 @@ TEST_CASE("CudaBufferUnified copyFrom CudaBufferUnified", "[cudabuffer]") {
     REQUIRE_NO_ERROR(bufDst->copyFrom(*bufSrc, 0, 0, SIZE_VEC, stream));
     REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, stream));
     REQUIRE(srcVec == dstVec);
-
-    bufSrc->memset(std::byte(0), SIZE_BYTES, stream);
-    bufDst->memset(std::byte(0), SIZE_BYTES, nullptr);
-
-    REQUIRE_NO_ERROR(bufSrc->copyFromHost(srcVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufDst->copyFrom(*bufSrc, 0, 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE(srcVec == dstVec);
   }
 
   bufSrc.reset();
   bufDst.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
@@ -198,7 +190,9 @@ TEST_CASE("CudaBufferUnified copyTo CudaBufferUnified", "[cudabuffer]") {
     dstVec[i] = std::byte(0);
   }
 
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
   std::unique_ptr<CudaBufferUnified> bufSrc =
     REQUIRE_EXPECTED(CudaBufferUnified::create(SIZE_BYTES));
@@ -248,19 +242,11 @@ TEST_CASE("CudaBufferUnified copyTo CudaBufferUnified", "[cudabuffer]") {
     REQUIRE_NO_ERROR(bufSrc->copyTo(*bufDst, 0, 0, SIZE_VEC, stream));
     REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, stream));
     REQUIRE(srcVec == dstVec);
-
-    bufSrc->memset(std::byte(0), SIZE_BYTES, stream);
-    bufDst->memset(std::byte(0), SIZE_BYTES, nullptr);
-
-    REQUIRE_NO_ERROR(bufSrc->copyFromHost(srcVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufSrc->copyTo(*bufDst, 0, 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE(srcVec == dstVec);
   }
 
   bufSrc.reset();
   bufDst.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
@@ -275,7 +261,9 @@ TEST_CASE("CudaBufferUnified copyTo CudaBufferDevice", "[cudabuffer]") {
     dstVec[i] = std::byte(0);
   }
 
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
   std::unique_ptr<CudaBufferUnified> bufSrc =
     REQUIRE_EXPECTED(CudaBufferUnified::create(SIZE_BYTES));
@@ -325,32 +313,27 @@ TEST_CASE("CudaBufferUnified copyTo CudaBufferDevice", "[cudabuffer]") {
     REQUIRE_NO_ERROR(bufSrc->copyTo(*bufDst, 0, 0, SIZE_VEC, stream));
     REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, stream));
     REQUIRE(srcVec == dstVec);
-
-    bufSrc->memset(std::byte(0), SIZE_BYTES, stream);
-    bufDst->memset(std::byte(0), SIZE_BYTES, nullptr);
-
-    REQUIRE_NO_ERROR(bufSrc->copyFromHost(srcVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufSrc->copyTo(*bufDst, 0, 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufDst->copyToHost(dstVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE(srcVec == dstVec);
   }
 
   bufSrc.reset();
   bufDst.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
-void runCudaBufferUnifiedCopyFromCudaBufferDevice(CudaMemAttachFlag flag) {
+TEST_CASE("CudaBufferUnified copyFrom CudaBufferDevice", "[cudabuffer]") {
   constexpr size_t SIZE_BYTES = 256;
   constexpr size_t SIZE_VEC = 128;
+
+  const CudaMemAttachFlag flag = GENERATE(CudaMemAttachFlag::Global, CudaMemAttachFlag::Host);
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
   std::vector<std::byte> srcVec(SIZE_VEC);
   for (size_t i = 0; i < SIZE_VEC; i++) {
     srcVec[i] = std::byte(i);
   }
-
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
 
   std::unique_ptr<CudaBufferDevice> bufSrc =
     REQUIRE_EXPECTED(CudaBufferDevice::create(SIZE_BYTES, stream));
@@ -395,35 +378,24 @@ void runCudaBufferUnifiedCopyFromCudaBufferDevice(CudaMemAttachFlag flag) {
     REQUIRE_NO_ERROR(bufDst->copyFrom(*bufSrc, 0, 0, SIZE_VEC, stream));
     REQUIRE_NO_ERROR(cuda::synchronizeStream(stream));
     REQUIRE(std::equal(srcVec.begin(), srcVec.end(), bufDst->hostData()));
-
-    bufSrc->memset(std::byte(0), SIZE_BYTES, stream);
-    bufDst->memset(std::byte(0), SIZE_BYTES, nullptr);
-
-    REQUIRE_NO_ERROR(bufSrc->copyFromHost(srcVec.data(), 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(bufDst->copyFrom(*bufSrc, 0, 0, SIZE_VEC, nullptr));
-    REQUIRE_NO_ERROR(cuda::synchronizeStream(nullptr));
-    REQUIRE(std::equal(srcVec.begin(), srcVec.end(), bufDst->hostData()));
   }
 
   bufSrc.reset();
   bufDst.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
-}
-
-TEST_CASE("CudaBufferUnified copyFrom CudaBufferDevice", "[cudabuffer]") {
-  // auto flag =
-  //   GENERATE(CudaMemAttachFlag::Global, CudaMemAttachFlag::Host);
-  auto flag = GENERATE(CudaMemAttachFlag::Global);
-  runCudaBufferUnifiedCopyFromCudaBufferDevice(flag);
 }
 
 TEST_CASE("CudaBufferUnified memset", "[cudabuffer]") {
   constexpr size_t SIZE_BYTES = 255; // 256 - 1 since 0xFF is used as a sentinel value
 
-  cudaStream_t stream = REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal));
+  const CudaMemAttachFlag flag = GENERATE(CudaMemAttachFlag::Global, CudaMemAttachFlag::Host);
+  const bool makeStream = GENERATE(true, false);
+  cudaStream_t stream =
+    makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
-  std::unique_ptr<CudaBufferUnified> buf = REQUIRE_EXPECTED(CudaBufferUnified::create(SIZE_BYTES));
+  std::unique_ptr<CudaBufferUnified> buf =
+    REQUIRE_EXPECTED(CudaBufferUnified::create(SIZE_BYTES, flag));
 
   std::vector<std::byte> vec(SIZE_BYTES, std::byte(0xFF));
 
@@ -446,6 +418,6 @@ TEST_CASE("CudaBufferUnified memset", "[cudabuffer]") {
   }
 
   buf.reset();
-  REQUIRE_NO_ERROR(cuda::destroyStream(stream));
+  if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
