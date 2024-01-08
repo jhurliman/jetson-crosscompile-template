@@ -57,4 +57,4 @@ jobs:
       - name: clang-tidy
         run: clang-tidy -p build/host --config-file=.clang-tidy --use-color $(find src/ -name '*.cpp')
       - name: Run tests
-        run: ctest --preset host
+        run: make test-cpu

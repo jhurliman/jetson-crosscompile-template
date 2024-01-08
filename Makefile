@@ -1,4 +1,4 @@
-.PHONY: all host jetson-nano test tidy clean
+.PHONY: all host host-cpu jetson-nano test test-cpu tidy clean
 
 # Default to building for host
 all: host
@@ -6,6 +6,11 @@ all: host
 # Build for host
 host:
 	cmake --preset host
+	cmake --build build/host
+
+# Build for host (CPU only)
+host-cpu:
+	cmake --preset host-cpu
 	cmake --build build/host
 
 # Build for jetson-nano
@@ -16,6 +21,9 @@ jetson-nano:
 # Test CPU and CUDA backends on host
 test: host
 	ctest --preset host
+
+test-cpu: host-cpu
+	ctest --preset host-cpu
 
 # Run clang-tidy on host
 tidy: host
