@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cuda/stream.hpp"
+
 #include <cuda_runtime_api.h>
 #include <tl/expected.hpp>
 

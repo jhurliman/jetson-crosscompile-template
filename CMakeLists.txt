@@ -93,9 +93,6 @@ else()
   target_include_directories(myapp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/backend/cpu)
 endif()
 
-# force CATCH_BUILD_STATIC_LIBRARY ON
-set(CATCH_BUILD_STATIC_LIBRARY ON)
-
 if(BUILD_TESTS)
   cpmaddpackage("gh:catchorg/Catch2@3.5.1")
   include(CTest)

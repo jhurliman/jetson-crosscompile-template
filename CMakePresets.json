@@ -48,5 +48,27 @@
         "COMPILE_T210": "ON"
       }
     }
+  ],
+  "testPresets": [
+    {
+      "name": "host",
+      "displayName": "Host System",
+      "description": "Run tests on the host system",
+      "configurePreset": "host",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      },
+      "filter": {
+        "exclude": {
+          "name": "_deps"
+        },
+        "include": {
+          "name": "^unit_tests_"
+        }
+      }
+    }
   ]
 }
