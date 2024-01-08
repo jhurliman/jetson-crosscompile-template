@@ -69,12 +69,8 @@ std::optional<StreamError> CudaBufferPitched2D::copyToHost(
   void* dst, size_t srcOffset, size_t count, cudaStream_t stream, bool synchronize) const {
   void* dstPtr = static_cast<std::byte*>(dst);
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
-  if (synchronize) {
-    CUDA_OPTIONAL(cudaStreamSynchronize(stream));
-    CUDA_OPTIONAL(cudaMemcpy(dstPtr, srcPtr, count, cudaMemcpyDeviceToHost));
-  } else {
-    CUDA_OPTIONAL(cudaMemcpyAsync(dstPtr, srcPtr, count, cudaMemcpyDeviceToHost, stream));
-  }
+  CUDA_OPTIONAL(cudaMemcpyAsync(dstPtr, srcPtr, count, cudaMemcpyDeviceToHost, stream));
+  if (synchronize) { CUDA_OPTIONAL(cudaStreamSynchronize(stream)); }
   return {};
 }
 
@@ -139,17 +135,9 @@ std::optional<StreamError> CudaBufferPitched2D::copyToHost2D(void* dst,
   bool synchronize) const {
   void* dstPtr = static_cast<std::byte*>(dst);
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcY * pitch() + srcX;
-  // CUDA_OPTIONAL(cudaMemcpy2DAsync(
-  //   dstPtr, dstPitch, srcPtr, pitch(), widthBytes, height, cudaMemcpyDeviceToHost, stream));
-  // if (synchronize) { CUDA_OPTIONAL(cudaStreamSynchronize(stream)); }
-  if (synchronize) {
-    CUDA_OPTIONAL(cudaStreamSynchronize(stream));
-    CUDA_OPTIONAL(
-      cudaMemcpy2D(dstPtr, dstPitch, srcPtr, pitch(), widthBytes, height, cudaMemcpyDeviceToHost));
-  } else {
-    CUDA_OPTIONAL(cudaMemcpy2DAsync(
-      dstPtr, dstPitch, srcPtr, pitch(), widthBytes, height, cudaMemcpyDeviceToHost, stream));
-  }
+  CUDA_OPTIONAL(cudaMemcpy2DAsync(
+    dstPtr, dstPitch, srcPtr, pitch(), widthBytes, height, cudaMemcpyDeviceToHost, stream));
+  if (synchronize) { CUDA_OPTIONAL(cudaStreamSynchronize(stream)); }
   return {};
 }
 
