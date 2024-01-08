@@ -27,6 +27,9 @@ cpmaddpackage("gh:fmtlib/fmt#10.2.1")
 cpmaddpackage("gh:jeremy-rifkin/cpptrace@0.3.1")
 cpmaddpackage("gh:TartanLlama/expected@1.1.0")
 
+# Work around dependencies including with `-I` instead of `-isystem`
+get_target_property(FMT_INCLUDE_DIRS fmt::fmt INTERFACE_INCLUDE_DIRECTORIES)
+
 file(GLOB_RECURSE COMMON_SOURCES "src/backend/common/*.cpp")
 
 if(COMPILE_CPU)
@@ -81,6 +84,7 @@ endif()
 add_executable(myapp src/main.cpp)
 target_compile_options(myapp PRIVATE ${PROJECT_WARNING_FLAGS})
 target_include_directories(myapp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_include_directories(myapp SYSTEM PRIVATE ${FMT_INCLUDE_DIRS})
 target_link_libraries(myapp PRIVATE fmt::fmt)
 if(COMPILE_T210)
   target_link_libraries(myapp PRIVATE backend_t210)
