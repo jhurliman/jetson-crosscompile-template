@@ -132,7 +132,8 @@ std::optional<StreamError> CudaBufferPitched2D::copyFromHost2D(const void* src,
 
   // Otherwise, copy row by row
   for (size_t y = 0; y < height; ++y) {
-    const auto err = copyFromHost(src, (dstY + y) * pitch() + dstX, widthBytes, stream);
+    const void* srcPtr = static_cast<const std::byte*>(src) + y * srcPitch;
+    const auto err = copyFromHost(srcPtr, (dstY + y) * pitch() + dstX, widthBytes, stream);
     if (err) { return err; }
   }
   return {};
