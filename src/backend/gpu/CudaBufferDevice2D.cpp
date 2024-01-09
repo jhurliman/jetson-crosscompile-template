@@ -18,6 +18,10 @@ size_t CudaBufferDevice2D::size() const {
   return buffer_->size();
 }
 
+size_t CudaBufferDevice2D::capacity() const {
+  return buffer_->size();
+}
+
 size_t CudaBufferDevice2D::widthBytes() const {
   return widthBytes_;
 }

@@ -14,15 +14,16 @@ TEST_CASE("Allocates CudaBufferPitched2D", "[cudabuffer]") {
     for (size_t width = 0; width < WIDTHS; width++) {
       bufPtr = REQUIRE_EXPECTED(CudaBufferPitched2D::create(width, height));
       REQUIRE(bufPtr);
-      REQUIRE(bufPtr->widthBytes() == width);
-      REQUIRE(bufPtr->height() == height);
-      REQUIRE(bufPtr->size() == bufPtr->pitch() * height);
-      REQUIRE(bufPtr->isDevice());
+      CHECK(bufPtr->widthBytes() == width);
+      CHECK(bufPtr->height() == height);
+      CHECK(bufPtr->size() == width * height);
+      CHECK(bufPtr->capacity() >= width * height);
+      CHECK(bufPtr->isDevice());
       if (width * height == 0) {
-        REQUIRE(bufPtr->cudaData() == nullptr);
+        CHECK(bufPtr->cudaData() == nullptr);
       } else {
-        REQUIRE(bufPtr->pitch() >= width);
-        REQUIRE(bufPtr->cudaData() != nullptr);
+        CHECK(bufPtr->pitch() >= width);
+        CHECK(bufPtr->cudaData() != nullptr);
       }
     }
   }
@@ -465,21 +466,24 @@ TEST_CASE("CudaBufferPitched2D copyFrom2D CudaBufferPitched2D", "[cudabuffer2d]"
   cudaStream_t stream =
     makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
+  constexpr size_t PITCH = 512;
+
   std::unique_ptr<CudaBufferPitched2D> bufSrc1 =
     REQUIRE_EXPECTED(CudaBufferPitched2D::create(16, 16));
   std::unique_ptr<CudaBufferPitched2D> bufSrc2 =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(7, 3));
+    REQUIRE_EXPECTED(CudaBufferPitched2D::create(513, 17));
   std::unique_ptr<CudaBufferPitched2D> bufDst =
     REQUIRE_EXPECTED(CudaBufferPitched2D::create(16, 16));
 
-  constexpr size_t PITCH = 512;
-
   CHECK(bufSrc1->pitch() == PITCH);
-  CHECK(bufSrc1->size() == PITCH * 16);
-  CHECK(bufSrc2->pitch() == PITCH);
-  CHECK(bufSrc2->size() == PITCH * 3);
+  CHECK(bufSrc1->size() == 16 * 16);
+  CHECK(bufSrc1->capacity() == PITCH * 16);
+  CHECK(bufSrc2->pitch() == PITCH * 2);
+  CHECK(bufSrc2->size() == 513 * 17);
+  CHECK(bufSrc2->capacity() == PITCH * 2 * 17);
   CHECK(bufDst->pitch() == PITCH);
-  CHECK(bufDst->size() == PITCH * 16);
+  CHECK(bufDst->size() == 16 * 16);
+  CHECK(bufDst->capacity() == PITCH * 16);
 
   SECTION("Copy one byte") {
     for (size_t srcY = 0; srcY < 16; srcY++) {
@@ -528,12 +532,17 @@ TEST_CASE("CudaBufferPitched2D copyFrom2D CudaBufferPitched2D", "[cudabuffer2d]"
 
         const size_t srcVecI = srcY * 16 + srcX;
         const size_t dstVecI = dstY * 16 + dstX;
+        // Copy 2x3 bytes from host `srcVec` to CUDA `bufSrc1`
         REQUIRE_NO_ERROR(
           bufSrc1->copyFromHost2D(srcVec.data() + srcVecI, 16, srcX, srcY, 2, 3, stream));
-        REQUIRE_NO_ERROR(bufDst->copyFrom2D(*bufSrc1, srcX, srcY, dstX, dstY, 2, 3, stream));
+        // Copy 2x3 bytes from CUDA `bufSrc1` to CUDA `bufSrc2`
+        REQUIRE_NO_ERROR(bufSrc1->copyTo2D(*bufSrc2, srcX, srcY, srcX, srcY, 2, 3, stream));
+        // Copy 2x3 bytes from CUDA `bufSrc2` to CUDA `bufDst`
+        REQUIRE_NO_ERROR(bufDst->copyFrom2D(*bufSrc2, srcX, srcY, dstX, dstY, 2, 3, stream));
+        // Copy 2x3 bytes from CUDA `bufDst` to host `dstVec`
         REQUIRE_NO_ERROR(
           bufDst->copyToHost2D(dstVec.data() + dstVecI, 16, dstX, dstY, 2, 3, stream));
-        // Check all 6 (2x3) bytes individually
+        // Check all 2x3 bytes individually
         for (size_t y = 0; y < 3; y++) {
           for (size_t x = 0; x < 2; x++) {
             const size_t curSrcVecI = (srcY + y) * 16 + srcX + x;
@@ -554,20 +563,3 @@ TEST_CASE("CudaBufferPitched2D copyFrom2D CudaBufferPitched2D", "[cudabuffer2d]"
   if (stream) { REQUIRE_NO_ERROR(cuda::destroyStream(stream)); }
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
-
-// std::optional<StreamError> CudaBufferPitched2D::copyTo2D(CudaBuffer2D& dst,
-//   size_t srcX,
-//   size_t srcY,
-//   size_t dstX,
-//   size_t dstY,
-//   size_t widthBytes,
-//   size_t height,
-//   cudaStream_t stream) const {
-//   void* dstPtr = static_cast<std::byte*>(dst.cudaData()) + dstY * dst.pitch() + dstX;
-//   const void* srcPtr = static_cast<const std::byte*>(data_) + srcY * pitch() + srcX;
-//   const auto copyType = dst.isDevice() ? cudaMemcpyDeviceToDevice : cudaMemcpyDeviceToHost;
-//   CUDA_OPTIONAL(
-//     cudaMemcpy2DAsync(dstPtr, dst.pitch(), srcPtr, pitch(), widthBytes, height, copyType,
-//     stream));
-//   return {};
-// }
