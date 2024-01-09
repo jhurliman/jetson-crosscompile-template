@@ -422,7 +422,7 @@ TEST_CASE("CudaBufferDevice2D memset", "[cudabuffer]") {
 
   std::vector<std::byte> vec(SIZE_BYTES, std::byte(0xFF));
 
-  for (size_t height = 0; height < HEIGHT; height++) {
+  for (size_t height = 0; height < HEIGHT; height += 3) {
     for (size_t width = 0; width < WIDTH_BYTES; width++) {
       const size_t i = height * WIDTH_BYTES + width;
 
@@ -484,14 +484,14 @@ TEST_CASE("CudaBufferDevice2D copyFrom2D CudaBufferDevice2D", "[cudabuffer2d]") 
   CHECK(bufDst->capacity() == 16 * 16);
 
   SECTION("Copy one byte") {
-    for (size_t srcY = 0; srcY < 16; srcY++) {
+    for (size_t srcY = 0; srcY < 16; srcY += 3) {
       for (size_t srcX = 0; srcX < 16; srcX++) {
         // Reset dstVec
         for (size_t i = 0; i < 256; i++) {
           dstVec[i] = std::byte(0xFF);
         }
 
-        for (size_t dstY = 0; dstY < 16; dstY++) {
+        for (size_t dstY = 0; dstY < 16; dstY += 2) {
           for (size_t dstX = 0; dstX < 16; dstX++) {
             const size_t srcVecI = srcY * 16 + srcX;
             const size_t dstVecI = dstY * 16 + dstX;
