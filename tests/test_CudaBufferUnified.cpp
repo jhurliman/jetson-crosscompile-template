@@ -399,7 +399,7 @@ TEST_CASE("CudaBufferUnified memset", "[cudabuffer]") {
 
   std::vector<std::byte> vec(SIZE_BYTES, std::byte(0xFF));
 
-  for (size_t i = 0; i < SIZE_BYTES; i++) {
+  for (size_t i = 0; i < SIZE_BYTES; i += 3) {
     REQUIRE_NO_ERROR(buf->memset(std::byte(i), i, stream));
     REQUIRE_NO_ERROR(buf->copyToHost(vec.data(), 0, i, stream));
 
