@@ -1,18 +1,18 @@
 #include "cuda/CudaBufferDevice.hpp"
-#include "cuda/CudaBufferPitched2D.hpp"
+#include "cuda/CudaBufferDevice2D.hpp"
 #include "cuda/stream.hpp"
 #include "requires.hpp"
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("Allocates CudaBufferPitched2D", "[cudabuffer]") {
+TEST_CASE("Allocates CudaBufferDevice2D", "[cudabuffer]") {
   constexpr size_t WIDTHS = 16;
   constexpr size_t HEIGHTS = 16;
 
-  std::unique_ptr<CudaBufferPitched2D> bufPtr;
+  std::unique_ptr<CudaBufferDevice2D> bufPtr;
   for (size_t height = 0; height < HEIGHTS; height++) {
     for (size_t width = 0; width < WIDTHS; width++) {
-      bufPtr = REQUIRE_EXPECTED(CudaBufferPitched2D::create(width, height));
+      bufPtr = REQUIRE_EXPECTED(CudaBufferDevice2D::create(width, height, nullptr));
       REQUIRE(bufPtr);
       CHECK(bufPtr->widthBytes() == width);
       CHECK(bufPtr->height() == height);
@@ -29,7 +29,7 @@ TEST_CASE("Allocates CudaBufferPitched2D", "[cudabuffer]") {
   }
 
   // Test large allocation (16MB)
-  bufPtr = REQUIRE_EXPECTED(CudaBufferPitched2D::create(4096, 4096));
+  bufPtr = REQUIRE_EXPECTED(CudaBufferDevice2D::create(4096, 4096, nullptr));
   REQUIRE(bufPtr);
   REQUIRE(bufPtr->size() == 4096 * 4096);
   REQUIRE(bufPtr->widthBytes() == 4096);
@@ -42,8 +42,8 @@ TEST_CASE("Allocates CudaBufferPitched2D", "[cudabuffer]") {
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
-TEST_CASE("CudaBufferPitched2D copyFromHost/copyToHost", "[cudabuffer]") {
-  // To test copyFromHost we need to allocate a CudaBufferPitched2D, copy data from the host to it,
+TEST_CASE("CudaBufferDevice2D copyFromHost/copyToHost", "[cudabuffer]") {
+  // To test copyFromHost we need to allocate a CudaBufferDevice2D, copy data from the host to it,
   // then copy the data back to the host and check it. Do this for a variety of offset/count values
   // and with and without a stream
 
@@ -62,8 +62,8 @@ TEST_CASE("CudaBufferPitched2D copyFromHost/copyToHost", "[cudabuffer]") {
   cudaStream_t stream =
     makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
-  std::unique_ptr<CudaBufferPitched2D> buf =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(WIDTH_BYTES, HEIGHT));
+  std::unique_ptr<CudaBufferDevice2D> buf =
+    REQUIRE_EXPECTED(CudaBufferDevice2D::create(WIDTH_BYTES, HEIGHT, stream));
 
   SECTION("Copy one byte") {
     for (size_t i = 0; i < SIZE_VEC; i++) {
@@ -110,8 +110,8 @@ TEST_CASE("CudaBufferPitched2D copyFromHost/copyToHost", "[cudabuffer]") {
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
-TEST_CASE("CudaBufferPitched2D copyFrom CudaBufferPitched2D", "[cudabuffer]") {
-  // To test copyFrom we need to allocate two CudaBufferPitched2Ds, copy data from one to the
+TEST_CASE("CudaBufferDevice2D copyFrom CudaBufferDevice2D", "[cudabuffer]") {
+  // To test copyFrom we need to allocate two CudaBufferDevice2Ds, copy data from one to the
   // other, then copy the data back to the host and check it. Do this for a variety of offset/count
   // values and with and without a stream
 
@@ -130,10 +130,10 @@ TEST_CASE("CudaBufferPitched2D copyFrom CudaBufferPitched2D", "[cudabuffer]") {
   cudaStream_t stream =
     makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
-  std::unique_ptr<CudaBufferPitched2D> bufSrc =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(WIDTH_BYTES, HEIGHT));
-  std::unique_ptr<CudaBufferPitched2D> bufDst =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(WIDTH_BYTES, HEIGHT));
+  std::unique_ptr<CudaBufferDevice2D> bufSrc =
+    REQUIRE_EXPECTED(CudaBufferDevice2D::create(WIDTH_BYTES, HEIGHT, stream));
+  std::unique_ptr<CudaBufferDevice2D> bufDst =
+    REQUIRE_EXPECTED(CudaBufferDevice2D::create(WIDTH_BYTES, HEIGHT, stream));
 
   SECTION("Copy one byte") {
     for (size_t i = 0; i < SIZE_VEC; i++) {
@@ -186,8 +186,8 @@ TEST_CASE("CudaBufferPitched2D copyFrom CudaBufferPitched2D", "[cudabuffer]") {
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
-TEST_CASE("CudaBufferPitched2D copyTo CudaBufferPitched2D", "[cudabuffer]") {
-  // To test copyTo we need to allocate two CudaBufferPitched2Ds, copy data from one to the other,
+TEST_CASE("CudaBufferDevice2D copyTo CudaBufferDevice2D", "[cudabuffer]") {
+  // To test copyTo we need to allocate two CudaBufferDevice2Ds, copy data from one to the other,
   // then copy the data back to the host and check it. Do this for a variety of offset/count values
   // and with and without a stream
 
@@ -206,10 +206,10 @@ TEST_CASE("CudaBufferPitched2D copyTo CudaBufferPitched2D", "[cudabuffer]") {
   cudaStream_t stream =
     makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
-  std::unique_ptr<CudaBufferPitched2D> bufSrc =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(WIDTH_BYTES, HEIGHT));
-  std::unique_ptr<CudaBufferPitched2D> bufDst =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(WIDTH_BYTES, HEIGHT));
+  std::unique_ptr<CudaBufferDevice2D> bufSrc =
+    REQUIRE_EXPECTED(CudaBufferDevice2D::create(WIDTH_BYTES, HEIGHT, stream));
+  std::unique_ptr<CudaBufferDevice2D> bufDst =
+    REQUIRE_EXPECTED(CudaBufferDevice2D::create(WIDTH_BYTES, HEIGHT, stream));
 
   SECTION("Copy one byte") {
     for (size_t i = 0; i < SIZE_VEC; i++) {
@@ -262,7 +262,7 @@ TEST_CASE("CudaBufferPitched2D copyTo CudaBufferPitched2D", "[cudabuffer]") {
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
-TEST_CASE("CudaBufferPitched2D copyTo CudaBufferDevice", "[cudabuffer]") {
+TEST_CASE("CudaBufferDevice2D copyTo CudaBufferDevice", "[cudabuffer]") {
   constexpr size_t WIDTH_BYTES = 16;
   constexpr size_t HEIGHT = 16;
   constexpr size_t SIZE_VEC = 128;
@@ -278,8 +278,8 @@ TEST_CASE("CudaBufferPitched2D copyTo CudaBufferDevice", "[cudabuffer]") {
   cudaStream_t stream =
     makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
-  std::unique_ptr<CudaBufferPitched2D> bufSrc =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(WIDTH_BYTES, HEIGHT));
+  std::unique_ptr<CudaBufferDevice2D> bufSrc =
+    REQUIRE_EXPECTED(CudaBufferDevice2D::create(WIDTH_BYTES, HEIGHT, stream));
   std::unique_ptr<CudaBufferDevice> bufDst =
     REQUIRE_EXPECTED(CudaBufferDevice::create(WIDTH_BYTES * HEIGHT, stream));
 
@@ -334,7 +334,7 @@ TEST_CASE("CudaBufferPitched2D copyTo CudaBufferDevice", "[cudabuffer]") {
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
-TEST_CASE("CudaBufferPitched2D copyFrom CudaBufferDevice", "[cudabuffer]") {
+TEST_CASE("CudaBufferDevice2D copyFrom CudaBufferDevice", "[cudabuffer]") {
   constexpr size_t WIDTH_BYTES = 16;
   constexpr size_t HEIGHT = 16;
   constexpr size_t SIZE_VEC = 128;
@@ -352,8 +352,8 @@ TEST_CASE("CudaBufferPitched2D copyFrom CudaBufferDevice", "[cudabuffer]") {
 
   std::unique_ptr<CudaBufferDevice> bufSrc =
     REQUIRE_EXPECTED(CudaBufferDevice::create(WIDTH_BYTES * HEIGHT, stream));
-  std::unique_ptr<CudaBufferPitched2D> bufDst =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(WIDTH_BYTES, HEIGHT));
+  std::unique_ptr<CudaBufferDevice2D> bufDst =
+    REQUIRE_EXPECTED(CudaBufferDevice2D::create(WIDTH_BYTES, HEIGHT, stream));
 
   SECTION("Copy one byte") {
     for (size_t i = 0; i < SIZE_VEC; i++) {
@@ -408,7 +408,7 @@ TEST_CASE("CudaBufferPitched2D copyFrom CudaBufferDevice", "[cudabuffer]") {
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
-TEST_CASE("CudaBufferPitched2D memset", "[cudabuffer]") {
+TEST_CASE("CudaBufferDevice2D memset", "[cudabuffer]") {
   constexpr size_t WIDTH_BYTES = 16;
   constexpr size_t HEIGHT = 15;
   constexpr size_t SIZE_BYTES = WIDTH_BYTES * HEIGHT;
@@ -417,8 +417,8 @@ TEST_CASE("CudaBufferPitched2D memset", "[cudabuffer]") {
   cudaStream_t stream =
     makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
-  std::unique_ptr<CudaBufferPitched2D> buf =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(WIDTH_BYTES, HEIGHT));
+  std::unique_ptr<CudaBufferDevice2D> buf =
+    REQUIRE_EXPECTED(CudaBufferDevice2D::create(WIDTH_BYTES, HEIGHT, stream));
 
   std::vector<std::byte> vec(SIZE_BYTES, std::byte(0xFF));
 
@@ -449,8 +449,8 @@ TEST_CASE("CudaBufferPitched2D memset", "[cudabuffer]") {
   REQUIRE_NO_ERROR(cuda::checkLastError());
 }
 
-TEST_CASE("CudaBufferPitched2D copyFrom2D CudaBufferPitched2D", "[cudabuffer2d]") {
-  // To test copyFrom2D we allocate three CudaBufferPitched2Ds, two with matching dimensions and
+TEST_CASE("CudaBufferDevice2D copyFrom2D CudaBufferDevice2D", "[cudabuffer2d]") {
+  // To test copyFrom2D we allocate three CudaBufferDevice2Ds, two with matching dimensions and
   // one with different height, width, and pitch. We copy data from the first to the second, then
   // copy the data back to the host and check it. Then from the first to the third, then back to the
   // host and check it. Do this for a variety of srcX, srcY, dstX, dstY, widthBytes, and height
@@ -466,24 +466,22 @@ TEST_CASE("CudaBufferPitched2D copyFrom2D CudaBufferPitched2D", "[cudabuffer2d]"
   cudaStream_t stream =
     makeStream ? REQUIRE_EXPECTED(cuda::createStream("test", StreamPriority::Normal)) : nullptr;
 
-  constexpr size_t PITCH = 512;
+  std::unique_ptr<CudaBufferDevice2D> bufSrc1 =
+    REQUIRE_EXPECTED(CudaBufferDevice2D::create(16, 16, stream));
+  std::unique_ptr<CudaBufferDevice2D> bufSrc2 =
+    REQUIRE_EXPECTED(CudaBufferDevice2D::create(513, 17, stream));
+  std::unique_ptr<CudaBufferDevice2D> bufDst =
+    REQUIRE_EXPECTED(CudaBufferDevice2D::create(16, 16, stream));
 
-  std::unique_ptr<CudaBufferPitched2D> bufSrc1 =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(16, 16));
-  std::unique_ptr<CudaBufferPitched2D> bufSrc2 =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(513, 17));
-  std::unique_ptr<CudaBufferPitched2D> bufDst =
-    REQUIRE_EXPECTED(CudaBufferPitched2D::create(16, 16));
-
-  CHECK(bufSrc1->pitch() == PITCH);
+  CHECK(bufSrc1->pitch() == 16);
   CHECK(bufSrc1->size() == 16 * 16);
-  CHECK(bufSrc1->capacity() == PITCH * 16);
-  CHECK(bufSrc2->pitch() == PITCH * 2);
+  CHECK(bufSrc1->capacity() == 16 * 16);
+  CHECK(bufSrc2->pitch() == 513);
   CHECK(bufSrc2->size() == 513 * 17);
-  CHECK(bufSrc2->capacity() == PITCH * 2 * 17);
-  CHECK(bufDst->pitch() == PITCH);
+  CHECK(bufSrc2->capacity() == 513 * 17);
+  CHECK(bufDst->pitch() == 16);
   CHECK(bufDst->size() == 16 * 16);
-  CHECK(bufDst->capacity() == PITCH * 16);
+  CHECK(bufDst->capacity() == 16 * 16);
 
   SECTION("Copy one byte") {
     for (size_t srcY = 0; srcY < 16; srcY++) {

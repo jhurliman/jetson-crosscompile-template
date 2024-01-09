@@ -14,6 +14,7 @@ public:
   ~CudaBufferPitched2D() override;
 
   size_t size() const override;
+  size_t capacity() const override;
   size_t widthBytes() const override;
   size_t height() const override;
   size_t pitch() const override;
