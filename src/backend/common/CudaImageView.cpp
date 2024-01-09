@@ -1,5 +1,7 @@
 #include "cuda/CudaImageView.hpp"
 
+#include "errors.hpp"
+
 tl::expected<CudaImageView, ArgumentError> CudaImageView::fromBuffer(
   CudaBuffer2D& buffer, size_t x, size_t y, size_t widthBytes, size_t height) {
   if (x >= buffer.widthBytes() || y >= buffer.height()) {
