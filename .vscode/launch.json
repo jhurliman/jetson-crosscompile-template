@@ -22,6 +22,46 @@
           "ignoreFailures": true
         }
       ]
+    },
+    {
+      "name": "Local Debug CUDA Unit Tests",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/build/host/tests/unit_tests_cuda",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "miDebuggerArgs": "-ex 'handle all print nostop noignore'",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "Local Debug CPU Unit Tests",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/build/host/tests/unit_tests_cpu",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "miDebuggerArgs": "-ex 'handle all print nostop noignore'",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }

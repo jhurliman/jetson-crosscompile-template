@@ -1,4 +1,4 @@
-file(GLOB_RECURSE TEST_SOURCES "test_*.cpp")
+file(GLOB_RECURSE TEST_SOURCES "*.cpp")
 
 if(COMPILE_CPU)
   add_executable(unit_tests_cpu ${TEST_SOURCES})
@@ -6,7 +6,7 @@ if(COMPILE_CPU)
   target_include_directories(unit_tests_cpu PRIVATE ${PROJECT_SOURCE_DIR}/include
                                                     ${PROJECT_SOURCE_DIR}/src/backend/cpu)
   target_link_libraries(unit_tests_cpu Catch2::Catch2 backend_cpu)
-  add_test(NAME unit_tests_cpu COMMAND unit_tests_cpu)
+  add_test(NAME unit_tests_cpu COMMAND unit_tests_cpu --use-colour yes)
 endif()
 
 if(COMPILE_CUDA)
@@ -15,7 +15,7 @@ if(COMPILE_CUDA)
   target_include_directories(unit_tests_cuda PRIVATE ${PROJECT_SOURCE_DIR}/include
                                                      ${PROJECT_SOURCE_DIR}/src/backend/gpu)
   target_link_libraries(unit_tests_cuda Catch2::Catch2 backend_cuda)
-  add_test(NAME unit_tests_cuda COMMAND unit_tests_cuda)
+  add_test(NAME unit_tests_cuda COMMAND unit_tests_cuda --use-colour yes)
 endif()
 
 if(COMPILE_T210)
@@ -24,5 +24,5 @@ if(COMPILE_T210)
   target_include_directories(unit_tests_t210 PRIVATE ${PROJECT_SOURCE_DIR}/include
                                                      ${PROJECT_SOURCE_DIR}/src/backend/gpu)
   target_link_libraries(unit_tests_t210 Catch2::Catch2 backend_t210)
-  add_test(NAME unit_tests_t210 COMMAND unit_tests_t210)
+  add_test(NAME unit_tests_t210 COMMAND unit_tests_t210 --use-colour yes)
 endif()

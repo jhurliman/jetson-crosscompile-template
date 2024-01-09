@@ -1,4 +1,5 @@
-#include "arithmetic.hpp"
+#include "cuda/arithmetic.hpp"
+#include "cuda_expected.hpp"
 
 #include <device_launch_parameters.h>
 
@@ -27,16 +28,12 @@ std::optional<StreamError> addVectors(const CudaArrayView<int64_t>& a,
   if (a.size() != b.size() || a.size() != c.size()) {
     return StreamError{cudaErrorInvalidValue, "Array sizes do not match"};
   }
+
   const size_t n = a.size();
-  uint blockSize = 256;
-  uint numBlocks = (uint(n) + blockSize - 1) / blockSize;
-  addVectorsKernel<<<numBlocks, blockSize, 0, stream>>>(a.data(), b.data(), c.data(), n);
-
-  // Check for errors
-  cudaError_t error = cudaGetLastError();
-  if (error != cudaSuccess) { return StreamError{error, cudaErrorMessage(error)}; }
-
-  return std::nullopt;
+  const uint blockSize = 256;
+  const uint numBlocks = (uint(n) + blockSize - 1) / blockSize;
+  CUDA_KERNEL(addVectorsKernel, numBlocks, blockSize, 0, stream, a.data(), b.data(), c.data(), n);
+  return {};
 }
 
 std::optional<StreamError> addVectors(const CudaArrayView<double>& a,
@@ -46,14 +43,10 @@ std::optional<StreamError> addVectors(const CudaArrayView<double>& a,
   if (a.size() != b.size() || a.size() != c.size()) {
     return StreamError{cudaErrorInvalidValue, "Array sizes do not match"};
   }
+
   const size_t n = a.size();
-  uint blockSize = 256;
-  uint numBlocks = (uint(n) + blockSize - 1) / blockSize;
-  addVectorsKernel<<<numBlocks, blockSize, 0, stream>>>(a.data(), b.data(), c.data(), n);
-
-  // Check for errors
-  cudaError_t error = cudaGetLastError();
-  if (error != cudaSuccess) { return StreamError{error, cudaErrorMessage(error)}; }
-
-  return std::nullopt;
+  const uint blockSize = 256;
+  const uint numBlocks = (uint(n) + blockSize - 1) / blockSize;
+  CUDA_KERNEL(addVectorsKernel, numBlocks, blockSize, 0, stream, a.data(), b.data(), c.data(), n);
+  return {};
 }

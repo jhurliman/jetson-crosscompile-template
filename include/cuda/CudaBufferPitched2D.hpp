@@ -2,17 +2,20 @@
 
 #include "CudaBuffer2D.hpp"
 
+#include <tl/expected.hpp>
+
 #include <memory>
 
-class CudaBufferPitched : public CudaBuffer2D {
+class CudaBufferPitched2D : public CudaBuffer2D {
 public:
-  static tl::expected<std::unique_ptr<CudaBufferPitched>, StreamError> create(
-    size_t width, size_t height);
+  static tl::expected<std::unique_ptr<CudaBufferPitched2D>, StreamError> create(
+    size_t widthBytes, size_t height);
 
-  ~CudaBufferPitched() override;
+  ~CudaBufferPitched2D() override;
 
   size_t size() const override;
-  size_t width() const override;
+  size_t capacity() const override;
+  size_t widthBytes() const override;
   size_t height() const override;
   size_t pitch() const override;
 
@@ -49,14 +52,15 @@ public:
     size_t srcY,
     size_t dstX,
     size_t dstY,
-    size_t width,
+    size_t widthBytes,
     size_t height,
     cudaStream_t stream) override;
 
   std::optional<StreamError> copyFromHost2D(const void* src,
+    size_t srcPitch,
     size_t dstX,
     size_t dstY,
-    size_t width,
+    size_t widthBytes,
     size_t height,
     cudaStream_t stream) override;
 
@@ -65,29 +69,30 @@ public:
     size_t srcY,
     size_t dstX,
     size_t dstY,
-    size_t width,
+    size_t widthBytes,
     size_t height,
     cudaStream_t stream) const override;
 
   std::optional<StreamError> copyToHost2D(void* dst,
+    size_t dstPitch,
     size_t srcX,
     size_t srcY,
-    size_t width,
+    size_t widthBytes,
     size_t height,
     cudaStream_t stream,
     bool synchronize = true) const override;
 
 private:
-  CudaBufferPitched(void* data, size_t width, size_t height, size_t pitch);
+  CudaBufferPitched2D(void* data, size_t widthBytes, size_t height, size_t pitch);
 
-  CudaBufferPitched(const CudaBufferPitched&) = delete;
-  CudaBufferPitched& operator=(const CudaBufferPitched&) = delete;
+  CudaBufferPitched2D(const CudaBufferPitched2D&) = delete;
+  CudaBufferPitched2D& operator=(const CudaBufferPitched2D&) = delete;
 
-  CudaBufferPitched(CudaBufferPitched&&) = delete;
-  CudaBufferPitched& operator=(CudaBufferPitched&&) = delete;
+  CudaBufferPitched2D(CudaBufferPitched2D&&) = delete;
+  CudaBufferPitched2D& operator=(CudaBufferPitched2D&&) = delete;
 
-  size_t width_ = 0;
-  size_t height_ = 0;
-  size_t pitch_ = 0;
-  void* data_ = nullptr;
+  void* data_;
+  size_t widthBytes_;
+  size_t height_;
+  size_t pitch_;
 };

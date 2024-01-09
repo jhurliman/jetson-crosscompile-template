@@ -48,5 +48,47 @@
         "COMPILE_T210": "ON"
       }
     }
+  ],
+  "testPresets": [
+    {
+      "name": "host",
+      "displayName": "Host System",
+      "description": "Run tests on the host system",
+      "configurePreset": "host",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      },
+      "filter": {
+        "exclude": {
+          "name": "_deps"
+        },
+        "include": {
+          "name": "^unit_tests_"
+        }
+      }
+    },
+    {
+      "name": "host-cpu",
+      "displayName": "Host System (no CUDA)",
+      "description": "Run tests on the host system (CPU only, no CUDA)",
+      "configurePreset": "host-cpu",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      },
+      "filter": {
+        "exclude": {
+          "name": "_deps"
+        },
+        "include": {
+          "name": "^unit_tests_cpu"
+        }
+      }
+    }
   ]
 }

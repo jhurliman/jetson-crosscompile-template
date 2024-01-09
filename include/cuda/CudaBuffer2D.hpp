@@ -3,8 +3,6 @@
 #include "CudaBuffer.hpp"
 #include "types.hpp"
 
-#include <tl/expected.hpp>
-
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -25,7 +23,8 @@ public:
   CudaBuffer2D(CudaBuffer2D&&) = delete;
   CudaBuffer2D& operator=(CudaBuffer2D&&) = delete;
 
-  virtual size_t width() const = 0;
+  virtual size_t capacity() const = 0;
+  virtual size_t widthBytes() const = 0;
   virtual size_t height() const = 0;
   virtual size_t pitch() const = 0;
 
@@ -34,14 +33,15 @@ public:
     size_t srcY,
     size_t dstX,
     size_t dstY,
-    size_t width,
+    size_t widthBytes,
     size_t height,
     cudaStream_t stream) = 0;
 
   virtual std::optional<StreamError> copyFromHost2D(const void* src,
+    size_t srcPitch,
     size_t dstX,
     size_t dstY,
-    size_t width,
+    size_t widthBytes,
     size_t height,
     cudaStream_t stream) = 0;
 
@@ -50,14 +50,15 @@ public:
     size_t srcY,
     size_t dstX,
     size_t dstY,
-    size_t width,
+    size_t widthBytes,
     size_t height,
     cudaStream_t stream) const = 0;
 
   virtual std::optional<StreamError> copyToHost2D(void* dst,
+    size_t dstPitch,
     size_t srcX,
     size_t srcY,
-    size_t width,
+    size_t widthBytes,
     size_t height,
     cudaStream_t stream,
     bool synchronize = true) const = 0;

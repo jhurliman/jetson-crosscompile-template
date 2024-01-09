@@ -2,12 +2,14 @@
 
 #include "CudaBuffer.hpp"
 
+#include <tl/expected.hpp>
+
 #include <memory>
 
 class CudaBufferHostPinned : public CudaBuffer {
 public:
   static tl::expected<std::unique_ptr<CudaBufferHostPinned>, StreamError> create(
-    size_t byteSize, uint flags = cudaHostAllocMapped);
+    size_t byteSize, CudaHostPinnedFlags flags = CudaHostPinnedFlags::Mapped);
 
   ~CudaBufferHostPinned() override;
 
@@ -53,6 +55,6 @@ private:
   CudaBufferHostPinned(CudaBufferHostPinned&&) = delete;
   CudaBufferHostPinned& operator=(CudaBufferHostPinned&&) = delete;
 
-  size_t size_ = 0;
-  std::byte* data_ = nullptr;
+  size_t size_;
+  std::byte* data_;
 };

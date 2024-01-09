@@ -18,7 +18,7 @@
 #undef __noclone__
 #undef __cold__
 
-// Now include the standard library headers
+// Include the standard library headers
 #include <memory>
 #include <string>
 
@@ -27,14 +27,13 @@
 #pragma pop_macro("__noclone__")
 #pragma pop_macro("__cold__")
 
-// Now include the CUDA headers
+// Next, include the CUDA header
 #include <cuda_runtime_api.h>
 
 #define HAS_CUDA_11_2 (CUDA_MAJOR == 11 && CUDA_MINOR >= 2) || (CUDA_MAJOR > 11)
 #else
 #include <string>
 
-constexpr uint cudaHostAllocMapped = 2;
 typedef struct CUstream_st* cudaStream_t;
 using cudaError_t = int;
 
@@ -43,12 +42,24 @@ constexpr cudaError_t cudaErrorInvalidValue = 1;
 constexpr cudaError_t cudaErrorMemoryAllocation = 2;
 #endif
 
-#include "../errors.hpp"
+#include <optional>
+
+enum class CudaDeviceSchedule {
+  Auto = 0,
+  Spin = 1,
+  Yield = 2,
+  BlockingSync = 4,
+};
 
 enum class CudaMemAttachFlag {
   Global = 1,
   Host = 2,
-  Single = 4,
+};
+
+enum class CudaHostPinnedFlags {
+  Default = 0,
+  Portable = 1,
+  Mapped = 2,
 };
 
 enum class StreamPriority {
@@ -57,13 +68,28 @@ enum class StreamPriority {
   Low = 2,
 };
 
+inline CudaHostPinnedFlags operator|(CudaHostPinnedFlags a, CudaHostPinnedFlags b) {
+  return CudaHostPinnedFlags(uint(a) | uint(b));
+}
+
+inline CudaHostPinnedFlags operator&(CudaHostPinnedFlags a, CudaHostPinnedFlags b) {
+  return CudaHostPinnedFlags(uint(a) & uint(b));
+}
+
 struct StreamError {
   cudaError_t errorCode;
   std::string errorMessage;
 
-  StreamError(cudaError_t code, const std::string& message)
+  StreamError(cudaError_t code,
+    const std::string& message,
+    std::optional<std::string> filename = std::nullopt,
+    std::optional<int> line = std::nullopt)
     : errorCode(code),
-      errorMessage(message) {}
+      errorMessage(message) {
+    if (filename && line) {
+      errorMessage = *filename + ":" + std::to_string(*line) + ": " + errorMessage;
+    }
+  }
 };
 
 inline std::string cudaErrorMessage(const cudaError_t error) {

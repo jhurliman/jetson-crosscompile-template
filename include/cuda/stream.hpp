@@ -4,9 +4,21 @@
 
 #include <tl/expected.hpp>
 
+#include <optional>
 #include <string_view>
+
+namespace cuda {
+
+std::optional<StreamError> ensureInitialized(
+  CudaDeviceSchedule schedule = CudaDeviceSchedule::Auto);
+
+std::optional<StreamError> checkLastError();
 
 tl::expected<cudaStream_t, StreamError> createStream(
   const std::string_view name, const StreamPriority priority);
 
-void destroyStream(cudaStream_t stream);
+std::optional<StreamError> destroyStream(cudaStream_t stream);
+
+std::optional<StreamError> synchronizeStream(cudaStream_t stream);
+
+} // namespace cuda

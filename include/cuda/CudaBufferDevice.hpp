@@ -2,6 +2,8 @@
 
 #include "CudaBuffer.hpp"
 
+#include <tl/expected.hpp>
+
 #include <memory>
 
 class CudaBufferDevice : public CudaBuffer {
@@ -47,8 +49,8 @@ private:
   CudaBufferDevice(const CudaBufferDevice&) = delete;
   CudaBufferDevice& operator=(const CudaBufferDevice&) = delete;
 
-  CudaBufferDevice(CudaBufferDevice&&) = delete;
-  CudaBufferDevice& operator=(CudaBufferDevice&&) = delete;
+  CudaBufferDevice(CudaBufferDevice&&) = default;
+  CudaBufferDevice& operator=(CudaBufferDevice&&) = default;
 
   size_t size_;
   void* data_;

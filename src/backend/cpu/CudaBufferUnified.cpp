@@ -7,11 +7,14 @@
 tl::expected<std::unique_ptr<CudaBufferUnified>, StreamError> CudaBufferUnified::create(
   size_t byteSize, CudaMemAttachFlag flag) {
   (void)flag;
+  if (byteSize == 0) {
+    return std::unique_ptr<CudaBufferUnified>(new CudaBufferUnified(nullptr, 0, true));
+  }
   void* data = ::malloc(byteSize);
   if (data == nullptr) {
     return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "malloc failed"});
   }
-  return std::unique_ptr<CudaBufferUnified>(new CudaBufferUnified(data, byteSize));
+  return std::unique_ptr<CudaBufferUnified>(new CudaBufferUnified(data, byteSize, true));
 }
 
 tl::expected<std::unique_ptr<CudaBufferUnified>, StreamError> CudaBufferUnified::createFromHostData(
@@ -26,9 +29,10 @@ tl::expected<std::unique_ptr<CudaBufferUnified>, StreamError> CudaBufferUnified:
   return std::move(bufferPtr);
 }
 
-CudaBufferUnified::CudaBufferUnified(void* data, size_t byteSize)
+CudaBufferUnified::CudaBufferUnified(void* data, size_t byteSize, bool isDevice)
   : size_(byteSize),
-    data_(static_cast<std::byte*>(data)) {}
+    data_(static_cast<std::byte*>(data)),
+    isDevice_(isDevice) {}
 
 CudaBufferUnified::~CudaBufferUnified() {
   ::free(data_);
@@ -52,6 +56,10 @@ const std::byte* CudaBufferUnified::hostData() const {
 
 std::byte* CudaBufferUnified::hostData() {
   return data_;
+}
+
+bool CudaBufferUnified::isDevice() const {
+  return isDevice_;
 }
 
 std::optional<StreamError> CudaBufferUnified::copyFrom(

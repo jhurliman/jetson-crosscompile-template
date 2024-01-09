@@ -11,6 +11,8 @@
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables,
 // cppcoreguidelines-pro-type-reinterpret-cast)
 
+namespace cuda {
+
 // Global atomic counter for stream IDs
 std::atomic<uint64_t> gStreamIdCounter(0);
 
@@ -19,6 +21,17 @@ std::unordered_map<uint64_t, std::pair<std::string, StreamPriority>> gStreamIdMa
 
 // Mutex to protect access to the gStreamIdToNameMap
 std::mutex gMapMutex;
+
+std::optional<StreamError> ensureInitialized(CudaDeviceSchedule schedule) {
+  // No-op in a CPU-only context
+  (void)schedule;
+  return {};
+}
+
+std::optional<StreamError> checkLastError() {
+  // No-op in a CPU-only context
+  return {};
+}
 
 tl::expected<cudaStream_t, StreamError> createStream(
   const std::string_view name, const StreamPriority priority) {
@@ -36,7 +49,7 @@ tl::expected<cudaStream_t, StreamError> createStream(
   return reinterpret_cast<cudaStream_t>(uintptr_t(streamId));
 }
 
-void destroyStream(cudaStream_t stream) {
+std::optional<StreamError> destroyStream(cudaStream_t stream) {
   // In a CPU-only context, the stream can be represented by its unique ID
   // Cast the stream to uint64_t to get the unique ID
   const uint64_t streamId = reinterpret_cast<uint64_t>(stream);
@@ -46,7 +59,17 @@ void destroyStream(cudaStream_t stream) {
     std::lock_guard<std::mutex> lock(gMapMutex);
     gStreamIdMap.erase(streamId);
   }
+
+  return {};
 }
+
+std::optional<StreamError> synchronizeStream(cudaStream_t stream) {
+  // No-op in a CPU-only context
+  (void)stream;
+  return {};
+}
+
+} // namespace cuda
 
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables,
 // cppcoreguidelines-pro-type-reinterpret-cast)
