@@ -1,9 +1,13 @@
 #pragma once
 
-#include "../errors.hpp"
 #include "CudaBuffer.hpp"
+#include "types.hpp"
 
 #include <tl/expected.hpp>
+
+// Must be included after `cuda/types.hpp` to avoid
+// <https://github.com/llvm/llvm-project/issues/62939>
+#include "../errors.hpp"
 
 /**
  * @brief A lightweight wrapper around a CudaBuffer that provides a view of the buffer as a typed
