@@ -20,7 +20,7 @@ jetson-nano:
 
 # Test CPU and CUDA backends on host
 test: host
-	ctest --preset host
+	ctest --preset host -j 2
 
 test-cpu: host-cpu
 	ctest --preset host-cpu

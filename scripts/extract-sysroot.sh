@@ -79,7 +79,7 @@ declare -A SYMLINKS_TO_FIX=(
 cd "$(dirname "$0")"
 
 # Build the docker image that will be used to create the sysroot
-docker build --platform linux/arm64 -t "jetson-${BOARD_ID}-sysroot" -f "Dockerfile.jetson-${BOARD_ID}" .
+DOCKER_BUILDKIT=1 docker build --platform linux/arm64 -t "jetson-${BOARD_ID}-sysroot" -f "Dockerfile.jetson-${BOARD_ID}" .
 docker create --name "jetson-${BOARD_ID}-sysroot" "jetson-${BOARD_ID}-sysroot"
 
 mkdir -p "../sysroot"
