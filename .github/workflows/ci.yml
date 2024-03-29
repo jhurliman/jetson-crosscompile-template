@@ -30,7 +30,7 @@ jobs:
           sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-${{ matrix.clang-version }} 999
           sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-${{ matrix.clang-version }} 999
           sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-${{ matrix.clang-version }} 999
-      - name: Install CMake/Ninja/PulseAudio
+      - name: Install CMake/Ninja
         run: |
           sudo apt-get update
           sudo apt-get install -y \
