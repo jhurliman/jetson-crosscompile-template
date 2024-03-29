@@ -28,3 +28,10 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     apt-get update && \
     apt-get install -y --no-install-recommends \
       nvidia-jetpack
+
+# Install pulseaudio client dev headers/library
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+      libpulse-dev

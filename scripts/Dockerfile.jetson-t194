@@ -1,0 +1,64 @@
+# syntax=docker/dockerfile:1.2
+FROM nvcr.io/nvidia/l4t-base:35.4.1
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install various implicit dependencies for `nvidia-l4t-core` and `nvidia-jetpack`
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+      apt-utils \
+      ca-certificates \
+      gnupg2 \
+      sudo
+
+# Add NVIDIA Jetson repositories (common + arch-specific) and install `nvidia-l4t-core` package
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    echo "deb https://repo.download.nvidia.com/jetson/common r35.4 main" >> /etc/apt/sources.list && \
+    echo "deb https://repo.download.nvidia.com/jetson/t194 r35.4 main" >> /etc/apt/sources.list && \
+    apt-key adv --fetch-key http://repo.download.nvidia.com/jetson/jetson-ota-public.asc && \
+    mkdir -p /opt/nvidia/l4t-packages/ && \
+    touch /opt/nvidia/l4t-packages/.nv-l4t-disable-boot-fw-update-in-preinstall && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends --option=Dpkg::Options::="--force-confnew" \
+      nvidia-l4t-core
+
+# libnvvpi2 expects the `/lib/firmware` directory to exist so it can create
+# `/lib/firmware/pva_auth_allowlist`
+RUN mkdir -p /lib/firmware
+
+# nsight-systems post-install script checks if this is a Tegra device with
+# `tegra_based=$(find /proc/device-tree/ -maxdepth 1 -name 'tegra*' 2>/dev/null)`
+# and fails if it doesn't find anything. See:
+# <https://forums.developer.nvidia.com/t/failed-to-install-jetpack-through-qemu/263184/9>
+#
+# Create a dummy nsight-systems package to skip installation since we don't need
+# nsight for sysroot generation
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    apt-get update && \
+    apt-get install -y --no-install-recommends equivs && \
+    mkdir -p /tmp/nsight-systems-dummy && \
+    cd /tmp/nsight-systems-dummy && \
+    echo "Package: nsight-systems-2023.2.4\nVersion: 2023.2.4.44-33011852v0\nSection: devel\nPriority: optional\nProvides: nsight-systems\nArchitecture: arm64\nMaintainer: Feedback <nsight-systems@nvidia.com>\nDescription: Dummy package for nsight-systems" > nsight-systems-equivs-control && \
+    equivs-build nsight-systems-equivs-control && \
+    dpkg -i nsight-systems-2023.2.4_2023.2.4.44-33011852v0_arm64.deb && \
+    rm -rf /tmp/nsight-systems-dummy && \
+    apt-get clean
+
+# Install NVIDIA Jetpack
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+      nvidia-jetpack
+
+# Install pulseaudio client dev headers/library
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+      libpulse-dev

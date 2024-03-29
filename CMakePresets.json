@@ -17,6 +17,7 @@
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "COMPILE_CPU": "ON",
         "COMPILE_CUDA": "ON",
+        "COMPILE_T194": "OFF",
         "COMPILE_T210": "OFF"
       }
     },
@@ -31,6 +32,22 @@
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "COMPILE_CPU": "ON",
         "COMPILE_CUDA": "OFF",
+        "COMPILE_T194": "OFF",
+        "COMPILE_T210": "OFF"
+      }
+    },
+    {
+      "name": "jetson-agx-xavier",
+      "displayName": "Jetson AGX Xavier (ARM64)",
+      "description": "Build for Jetson AGX Xavier (ARM64)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/jetson-agx-xavier",
+      "toolchainFile": "${sourceDir}/jetson-t194.toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "COMPILE_CPU": "OFF",
+        "COMPILE_CUDA": "OFF",
+        "COMPILE_T194": "ON",
         "COMPILE_T210": "OFF"
       }
     },
@@ -45,6 +62,7 @@
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "COMPILE_CPU": "OFF",
         "COMPILE_CUDA": "OFF",
+        "COMPILE_T194": "OFF",
         "COMPILE_T210": "ON"
       }
     }

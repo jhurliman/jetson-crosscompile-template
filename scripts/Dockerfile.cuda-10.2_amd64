@@ -5,20 +5,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       apt-utils \
+      build-essential \
       ca-certificates \
+      libxml2 \
       gnupg2 \
+      wget \
     && \
     rm -rf /var/lib/apt/lists/*
 
-ADD cuda-repo-cross-aarch64-ubuntu1804-10-2-local_10.2.460-1_all.deb /tmp/cuda-repo-cross-aarch64-ubuntu1804-10-2-local_10.2.460-1_all.deb
-ADD cuda-repo-ubuntu1804-10-2-local_10.2.460-450.115-1_amd64.deb /tmp/cuda-repo-ubuntu1804-10-2-local_10.2.460-450.115-1_amd64.deb
-
-RUN apt-get update && \
-    dpkg --force-all -i /tmp/cuda-repo-cross-aarch64-ubuntu1804-10-2-local_10.2.460-1_all.deb && \
-    dpkg --force-all -i /tmp/cuda-repo-ubuntu1804-10-2-local_10.2.460-450.115-1_amd64.deb && \
-    apt-key add /var/cuda-repo-ubuntu1804-10-2-local/7fa2af80.pub && \
-    apt-get -y update && \
-    apt install -y gnupg libgomp1 libfreeimage-dev libopenmpi-dev openmpi-bin && \
-    apt-get -y --allow-downgrades install cuda-toolkit-10-2 cuda-cross-aarch64-10-2 && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm /tmp/cuda-repo-*.deb
+# Fetch and install CUDA .run file
+RUN wget --no-verbose --show-progress --progress=dot:mega https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run && \
+    chmod +x cuda_10.2.89_440.33.01_linux.run && \
+    ./cuda_10.2.89_440.33.01_linux.run --silent --toolkit --toolkitpath=/usr/local/cuda-10.2 && \
+    rm cuda_10.2.89_440.33.01_linux.run
