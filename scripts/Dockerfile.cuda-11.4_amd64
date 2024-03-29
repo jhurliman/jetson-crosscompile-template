@@ -1,0 +1,20 @@
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      apt-utils \
+      build-essential \
+      ca-certificates \
+      libxml2 \
+      gnupg2 \
+      wget \
+    && \
+    rm -rf /var/lib/apt/lists/*
+
+# Fetch and install CUDA .run file
+RUN wget --no-verbose --show-progress --progress=dot:mega https://developer.download.nvidia.com/compute/cuda/11.4.4/local_installers/cuda_11.4.4_470.82.01_linux.run && \
+    chmod +x cuda_11.4.4_470.82.01_linux.run && \
+    ./cuda_11.4.4_470.82.01_linux.run --silent --toolkit --toolkitpath=/usr/local/cuda-11.4 && \
+    rm cuda_11.4.4_470.82.01_linux.run

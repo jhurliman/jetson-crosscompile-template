@@ -24,7 +24,7 @@ NVIDIA Jetson devices are great for edge computing, but the development experien
 | -------------- | :-: | :--: | :--: |
 | GitHub Actions | ✅  |  ❌  |  ❌  |
 | Linux/WSL      | ✅  |  ✅  |  ❌  |
-| Jetson Nano    | ✅  |  ✅  |  ✅  |
+| Jetson         | ✅  |  ✅  |  ✅  |
 
 _Supported backends for different deployment targets. GitHub Actions can be extended to support CUDA and Tegra targets with [Custom Runners](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners)._
 
@@ -46,8 +46,6 @@ This project is open source and available under the [MIT License](LICENSE). Deve
 
 - [x] ctest unit test
 - [x] CPM dependency management
-- [ ] IWYU integration
-- [ ] `make jetson-nano` in CI
+- [x] Add support for more Jetson devices
 - [ ] fix <<<...>>> clang warning for CUDA kernel launch
 - [ ] C++23
-- [ ] Add support for more Jetson devices

@@ -16,6 +16,7 @@ jobs:
         clang-version:
           - 15
     steps:
+      # Setup
       - name: Install clang-${{ matrix.clang-version }}
         uses: egor-tensin/setup-clang@v1
         with:
@@ -28,33 +29,46 @@ jobs:
           sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-${{ matrix.clang-version }} 999
           sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-${{ matrix.clang-version }} 999
           sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-${{ matrix.clang-version }} 999
+          sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-${{ matrix.clang-version }} 999
       - name: Install CMake/Ninja
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             cmake \
-            cmake-format \
             ninja-build \
+
+      # Checkout
       - uses: actions/checkout@v3
         with:
           lfs: true
-      - name: cmake-format
-        run: cmake-format --check --config-file .cmake-format.yaml CMakeLists.txt $(find . cmake -maxdepth 1 -name '*.cmake')
+
+      # Code formatting
       - name: clang-format
         run: clang-format --dry-run --Werror --style=file $(find include/ -name '*.hpp') $(find src/ -name '*.cpp')
+
       - name: Install CUDA Toolkit (x86_64)
         uses: Jimver/cuda-toolkit@v0.2.11
         id: cuda-toolkit
         with:
           cuda: "10.2.89"
           linux-local-args: '["--toolkit", "--override"]'
+
+      - name: "Symlink to CUDA"
+        run: |
+          mkdir -p ./nvidia
+          ln -s /usr/local/cuda-10.2 ./nvidia/cuda-10.2_amd64
+          ls -lh ./nvidia/cuda-10.2_amd64
+
+      # Build
       - name: Build for host (x86_64)
         run: |
           cmake --version
           make
-      # - name: Build for Jetson Nano (aarch64)
-      #   run: make jetson-nano
+
+      # Lint
       - name: clang-tidy
         run: clang-tidy -p build/host --config-file=.clang-tidy --use-color $(find src/ -name '*.cpp')
+
+      # Test
       - name: Run tests
         run: ctest --preset host-cpu

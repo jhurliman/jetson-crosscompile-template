@@ -8,22 +8,16 @@
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
 
-  "[cmake]": {
-    "editor.defaultFormatter": "cheshirekow.cmake-format"
-  },
   "[cpp]": {
-    "editor.defaultFormatter": "ms-vscode.cpptools"
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
   },
   "[cuda-cpp]": {
-    "editor.defaultFormatter": "ms-vscode.cpptools"
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
   },
 
   "C_Cpp.autoAddFileAssociations": false,
-  "cmake.configureOnOpen": true,
-  "cmakeFormat.args": [
-    "--config-file",
-    "${workspaceFolder}/.cmake-format.yaml"
-  ],
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "cmake.configureOnOpen": false,
 
   "search.exclude": {
     "build/": true,

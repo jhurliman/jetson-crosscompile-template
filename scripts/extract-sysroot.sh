@@ -32,49 +32,17 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# For T210 (Jetson Nano)
 TOOLCHAIN_URL="https://developer.nvidia.com/embedded/dlc/l4t-gcc-7-3-1-toolchain-64-bit"
 TOOLCHAIN_DIRECTORY="gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu"
 TOOLCHAIN_FILENAME="${TOOLCHAIN_DIRECTORY}.tar.xz"
 
-# An associative array of symlinks to fix. The key is the existing symlink, and
-# the value is the new target (relative path)
-declare -A SYMLINKS_TO_FIX=(
-    ["/etc/alternatives/cuda-10"]="/usr/local/cuda-10.2"
-    ["/etc/alternatives/cudnn_version_h"]="/usr/include/aarch64-linux-gnu/cudnn_version_v8.h"
-    ["/usr/lib/aarch64-linux-gnu/libBrokenLocale.so"]="/lib/aarch64-linux-gnu/libBrokenLocale.so.1"
-    ["/usr/lib/aarch64-linux-gnu/libanl.so"]="/lib/aarch64-linux-gnu/libanl.so.1"
-    ["/usr/lib/aarch64-linux-gnu/libblas.so.3"]="/etc/alternatives/libblas.so.3-aarch64-linux-gnu"
-    ["/usr/lib/aarch64-linux-gnu/libcidn.so"]="/lib/aarch64-linux-gnu/libcidn.so.1"
-    ["/usr/lib/aarch64-linux-gnu/libcrypt.so"]="/lib/aarch64-linux-gnu/libcrypt.so.1"
-    ["/usr/lib/aarch64-linux-gnu/libcudnn.so"]="/etc/alternatives/libcudnn_so"
-    ["/usr/lib/aarch64-linux-gnu/libcudnn_adv_infer.so"]="/etc/alternatives/libcudnn_adv_infer_so"
-    ["/usr/lib/aarch64-linux-gnu/libcudnn_adv_train.so"]="/etc/alternatives/libcudnn_adv_train_so"
-    ["/usr/lib/aarch64-linux-gnu/libcudnn_cnn_infer.so"]="/etc/alternatives/libcudnn_cnn_infer_so"
-    ["/usr/lib/aarch64-linux-gnu/libcudnn_cnn_train.so"]="/etc/alternatives/libcudnn_cnn_train_so"
-    ["/usr/lib/aarch64-linux-gnu/libcudnn_ops_infer.so"]="/etc/alternatives/libcudnn_ops_infer_so"
-    ["/usr/lib/aarch64-linux-gnu/libcudnn_ops_train.so"]="/etc/alternatives/libcudnn_ops_train_so"
-    ["/usr/lib/aarch64-linux-gnu/libcudnn_static.a"]="/etc/alternatives/libcudnn_stlib"
-    ["/usr/lib/aarch64-linux-gnu/libdl.so"]="/lib/aarch64-linux-gnu/libdl.so.2"
-    ["/usr/lib/aarch64-linux-gnu/liblapack.so.3"]="/etc/alternatives/liblapack.so.3-aarch64-linux-gnu"
-    ["/usr/lib/aarch64-linux-gnu/libm.so"]="/lib/aarch64-linux-gnu/libm.so.6"
-    ["/usr/lib/aarch64-linux-gnu/libnsl.so"]="/lib/aarch64-linux-gnu/libnsl.so.1"
-    ["/usr/lib/aarch64-linux-gnu/libnss_compat.so"]="/lib/aarch64-linux-gnu/libnss_compat.so.2"
-    ["/usr/lib/aarch64-linux-gnu/libnss_dns.so"]="/lib/aarch64-linux-gnu/libnss_dns.so.2"
-    ["/usr/lib/aarch64-linux-gnu/libnss_files.so"]="/lib/aarch64-linux-gnu/libnss_files.so.2"
-    ["/usr/lib/aarch64-linux-gnu/libnss_hesiod.so"]="/lib/aarch64-linux-gnu/libnss_hesiod.so.2"
-    ["/usr/lib/aarch64-linux-gnu/libnss_nis.so"]="/lib/aarch64-linux-gnu/libnss_nis.so.2"
-    ["/usr/lib/aarch64-linux-gnu/libnss_nisplus.so"]="/lib/aarch64-linux-gnu/libnss_nisplus.so.2"
-    ["/usr/lib/aarch64-linux-gnu/libnvvpi.so"]="/etc/alternatives/libnvvpi.so"
-    ["/usr/lib/aarch64-linux-gnu/libpcre.so"]="/lib/aarch64-linux-gnu/libpcre.so.3"
-    ["/usr/lib/aarch64-linux-gnu/libresolv.so"]="/lib/aarch64-linux-gnu/libresolv.so.2"
-    ["/usr/lib/aarch64-linux-gnu/librt.so"]="/lib/aarch64-linux-gnu/librt.so.1"
-    ["/usr/lib/aarch64-linux-gnu/libthread_db.so"]="/lib/aarch64-linux-gnu/libthread_db.so.1"
-    ["/usr/lib/aarch64-linux-gnu/libutil.so"]="/lib/aarch64-linux-gnu/libutil.so.1"
-    ["/usr/lib/aarch64-linux-gnu/libz.so"]="/lib/aarch64-linux-gnu/libz.so.1.2.11"
-    ["/usr/local/cuda-10.2/lib"]="/usr/local/cuda-10.2/targets/aarch64-linux/lib"
-    ["/usr/local/cuda-10.2/lib64"]="/usr/local/cuda-10.2/targets/aarch64-linux/lib"
-    ["/usr/local/cuda-10.2/include"]="/usr/local/cuda-10.2/targets/aarch64-linux/include"
-)
+# Handle T194 (Jetson AGX Xavier)
+if [[ "$BOARD_ID" == "t194" ]]; then
+    TOOLCHAIN_URL="https://developer.nvidia.com/embedded/jetson-linux/bootlin-toolchain-gcc-93"
+    TOOLCHAIN_DIRECTORY="bootlin-toolchain-gcc-93"
+    TOOLCHAIN_FILENAME="${TOOLCHAIN_DIRECTORY}.tar.gz"
+fi
 
 cd "$(dirname "$0")"
 
@@ -94,18 +62,19 @@ rm -rf "jetson-${BOARD_ID}"
 mkdir -p "jetson-${BOARD_ID}"
 tar -xpf "jetson-${BOARD_ID}-sysroot.tar" -C "jetson-${BOARD_ID}"
 
-# Fix the symlinks
+# Fix absolute symlinks in the sysroot
 SYSROOT_DIR="$(pwd)/jetson-${BOARD_ID}"
-for SYMLINK in "${!SYMLINKS_TO_FIX[@]}"; do
-    TARGET="${SYMLINKS_TO_FIX[$SYMLINK]}"
-    FULL_SYMLINK_PATH="${SYSROOT_DIR}${SYMLINK}"
+find "$SYSROOT_DIR" -type l -print0 | while IFS= read -r -d '' symlink; do
+    target="$(readlink "$symlink")"
+    # Check if the symlink is absolute and does not start with SYSROOT_DIR
+    if [[ "$target" == /* && "$target" != "$SYSROOT_DIR"* ]]; then
+        # Make the target relative to the symlink
+        fixed_target="$SYSROOT_DIR$target"
 
-    # Remove the existing absolute symlink
-    rm -f "${FULL_SYMLINK_PATH}"
-
-    # Create a new relative symlink
-    ln -sr "${SYSROOT_DIR}${TARGET}" "${FULL_SYMLINK_PATH}"
-    echo "Fixed symlink ${SYMLINK} -> ${TARGET}"
+        ln -sf "$fixed_target" "$symlink" 2>/dev/null || {
+            sudo ln -sf "$fixed_target" "$symlink"
+        }
+    fi
 done
 
 echo "sysroot created at $(pwd)/jetson-${BOARD_ID}"
@@ -116,6 +85,7 @@ if [[ ! -d "${TOOLCHAIN_DIRECTORY}" ]]; then
     if [[ ! -f "${TOOLCHAIN_FILENAME}" ]]; then
         wget -O "${TOOLCHAIN_FILENAME}" "${TOOLCHAIN_URL}"
     fi
-    tar -xpf "${TOOLCHAIN_FILENAME}"
+    mkdir -p "${TOOLCHAIN_DIRECTORY}"
+    tar -xpf "${TOOLCHAIN_FILENAME}" -C "${TOOLCHAIN_DIRECTORY}"
     echo "toolchain extracted to $(pwd)/${TOOLCHAIN_DIRECTORY}"
 fi
