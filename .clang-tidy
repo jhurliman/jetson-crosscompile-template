@@ -1,4 +1,4 @@
-Checks: "cppcoreguidelines-*,-cppcoreguidelines-init-variables,-cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-analyzer-*,clang-diagnostic-*,-clang-diagnostic-unknown-warning-option"
+Checks: "cppcoreguidelines-*,-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-init-variables,-cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-analyzer-*,clang-diagnostic-*,-clang-diagnostic-unknown-warning-option"
 WarningsAsErrors: true
 HeaderFilterRegex: "^(?!.*_deps).*/include/.*$"
 AnalyzeTemporaryDtors: false

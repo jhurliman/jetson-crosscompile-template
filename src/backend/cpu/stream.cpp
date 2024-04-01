@@ -5,7 +5,6 @@
 #include <atomic>
 #include <mutex>
 #include <string>
-#include <tuple>
 #include <unordered_map>
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables,
