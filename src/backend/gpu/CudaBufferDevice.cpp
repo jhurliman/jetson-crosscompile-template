@@ -1,6 +1,5 @@
 #include "cuda/CudaBufferDevice.hpp"
 
-#include "cuda/stream.hpp"
 #include "cuda_expected.hpp"
 
 tl::expected<std::unique_ptr<CudaBufferDevice>, StreamError> CudaBufferDevice::create(

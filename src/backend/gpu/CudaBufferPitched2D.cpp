@@ -17,6 +17,10 @@ CudaBufferPitched2D::~CudaBufferPitched2D() {
 }
 
 size_t CudaBufferPitched2D::size() const {
+  return widthBytes_ * height_;
+}
+
+size_t CudaBufferPitched2D::capacity() const {
   return pitch_ * height_;
 }
 

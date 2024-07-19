@@ -1,4 +1,4 @@
-.PHONY: all host host-cpu jetson-nano test test-cpu tidy clean
+.PHONY: all host host-cpu jetson-agx-xavier jetson-nano test test-cpu tidy clean
 
 # Default to building for host
 all: host
@@ -13,6 +13,11 @@ host-cpu:
 	cmake --preset host-cpu
 	cmake --build build/host
 
+# Build for jetson-agx-xavier
+jetson-agx-xavier:
+	cmake --preset jetson-agx-xavier
+	cmake --build build/jetson-agx-xavier
+
 # Build for jetson-nano
 jetson-nano:
 	cmake --preset jetson-nano
@@ -20,7 +25,7 @@ jetson-nano:
 
 # Test CPU and CUDA backends on host
 test: host
-	ctest --preset host
+	ctest --preset host -j 2
 
 test-cpu: host-cpu
 	ctest --preset host-cpu

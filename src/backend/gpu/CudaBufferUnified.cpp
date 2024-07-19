@@ -1,6 +1,5 @@
 #include "cuda/CudaBufferUnified.hpp"
 
-#include "cuda/stream.hpp"
 #include "cuda_expected.hpp"
 
 #include <cuda_runtime.h>

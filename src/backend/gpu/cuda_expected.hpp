@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cuda/stream.hpp"
+#include "cuda/stream.hpp" // IWYU pragma: export
 
 #include <cuda_runtime_api.h>
 #include <tl/expected.hpp>

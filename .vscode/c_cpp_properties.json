@@ -2,7 +2,7 @@
   "configurations": [
     {
       "name": "Linux",
-      "includePath": ["${workspaceFolder}/**"],
+      "includePath": ["${workspaceFolder}/include"],
       "defines": ["__INTELLISENSE__", "USE_GPU"],
       "compilerPath": "/usr/bin/clang++",
       "cStandard": "c23",
@@ -12,10 +12,11 @@
     {
       "name": "Jetson Nano",
       "includePath": [
-        "${workspaceFolder}/**",
-        "${workspaceFolder}/sysroot/jetson-t210/usr/include/**",
-        "${workspaceFolder}/sysroot/jetson-t210/usr/include/aarch64-linux-gnu/**",
-        "${workspaceFolder}/sysroot/jetson-t210/usr/local/cuda-10.2/targets/aarch64-linux/include/**"
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/build/jetson-nano/_deps/**/include",
+        "${workspaceFolder}/sysroot/jetson-t210/usr/include",
+        "${workspaceFolder}/sysroot/jetson-t210/usr/include/aarch64-linux-gnu",
+        "${workspaceFolder}/sysroot/jetson-t210/usr/local/cuda-10.2/targets/aarch64-linux/include"
       ],
       "defines": ["__INTELLISENSE__", "USE_GPU", "USE_T210"],
       "compilerPath": "/usr/bin/clang++",
@@ -29,6 +30,28 @@
       "intelliSenseMode": "linux-clang-arm64",
       "configurationProvider": "ms-vscode.cmake-tools",
       "compileCommands": "${workspaceFolder}/build/jetson-nano/compile_commands.json"
+    },
+    {
+      "name": "Jetson AGX Xavier",
+      "includePath": [
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/build/jetson-agx-xavier/_deps/**/include",
+        "${workspaceFolder}/sysroot/jetson-t194/usr/include",
+        "${workspaceFolder}/sysroot/jetson-t194/usr/include/aarch64-linux-gnu",
+        "${workspaceFolder}/sysroot/jetson-t194/usr/local/cuda-11.4/targets/aarch64-linux/include"
+      ],
+      "defines": ["__INTELLISENSE__", "USE_GPU", "USE_T194"],
+      "compilerPath": "/usr/bin/clang++",
+      "compilerArgs": [
+        "--target=aarch64-linux-gnu",
+        "--sysroot=${workspaceFolder}/sysroot/jetson-t194",
+        "--gcc-toolchain=${workspaceFolder}/sysroot/bootlin-toolchain-gcc-93"
+      ],
+      "cStandard": "c23",
+      "cppStandard": "c++20",
+      "intelliSenseMode": "linux-clang-arm64",
+      "configurationProvider": "ms-vscode.cmake-tools",
+      "compileCommands": "${workspaceFolder}/build/jetson-agx-xavier/compile_commands.json"
     }
   ],
   "version": 4

@@ -3,7 +3,6 @@
 #include <tbb/parallel_for.h>
 
 #include <cstdint>
-#include <vector>
 
 #define __global__
 

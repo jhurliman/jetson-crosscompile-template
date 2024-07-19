@@ -26,7 +26,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "'rsync -avz --delete \"${workspaceRoot}/build/jetson-nano\" ${input:jetson-user}@${input:jetson-host}:/home/${input:jetson-user}/'"
+        "'rsync -avz --delete \"${workspaceRoot}/build/jetson-nano/\" ${input:jetson-host}:${input:jetson-path}'"
       ],
       "problemMatcher": [],
       "runOptions": {
@@ -40,7 +40,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "'ssh ${input:jetson-user}@${input:jetson-host} \"gdbserver :2000 /home/${input:jetson-user}/jetson-nano/myapp\"'"
+        "'ssh ${input:jetson-host} \"gdbserver :2000 ${input:jetson-path}/myapp\"'"
       ],
       "presentation": {
         "echo": true,
@@ -61,14 +61,14 @@
     {
       "id": "jetson-host",
       "type": "promptString",
-      "description": "Target Jetson hostname or IP address",
-      "default": "jetson-nano.local"
+      "description": "Target Jetson hostname or user@hostname",
+      "default": "jetson"
     },
     {
-      "id": "jetson-user",
+      "id": "jetson-path",
       "type": "promptString",
-      "description": "Target Jetson username",
-      "default": "nvidia"
+      "description": "Target deployment directory on the Jetson",
+      "default": "/app"
     }
   ]
 }

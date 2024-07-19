@@ -39,3 +39,9 @@ nvidia/
 
 # Extracted sysroot and toolchain
 sysroot/
+
+# clangd cache
+.cache/
+
+# OS-specific files
+*.DS_Store

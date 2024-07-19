@@ -23,6 +23,7 @@ public:
   CudaBuffer2D(CudaBuffer2D&&) = delete;
   CudaBuffer2D& operator=(CudaBuffer2D&&) = delete;
 
+  virtual size_t capacity() const = 0;
   virtual size_t widthBytes() const = 0;
   virtual size_t height() const = 0;
   virtual size_t pitch() const = 0;

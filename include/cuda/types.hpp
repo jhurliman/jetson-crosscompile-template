@@ -42,8 +42,6 @@ constexpr cudaError_t cudaErrorInvalidValue = 1;
 constexpr cudaError_t cudaErrorMemoryAllocation = 2;
 #endif
 
-#include "../errors.hpp"
-
 #include <optional>
 
 enum class CudaDeviceSchedule {

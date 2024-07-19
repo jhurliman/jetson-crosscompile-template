@@ -1,28 +1,30 @@
+# syntax=docker/dockerfile:1.2
 FROM nvcr.io/nvidia/l4t-base:r32.7.1
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && \
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
       apt-utils \
       ca-certificates \
-      gnupg2 \
-    && \
-    rm -rf /var/lib/apt/lists/*
+      gnupg2
 
-RUN echo "deb https://repo.download.nvidia.com/jetson/common r32.7 main" >> /etc/apt/sources.list && \
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    echo "deb https://repo.download.nvidia.com/jetson/common r32.7 main" >> /etc/apt/sources.list && \
     echo "deb https://repo.download.nvidia.com/jetson/t210 r32.7 main" >> /etc/apt/sources.list && \
     apt-key adv --fetch-key http://repo.download.nvidia.com/jetson/jetson-ota-public.asc && \
     mkdir -p /opt/nvidia/l4t-packages/ && \
     touch /opt/nvidia/l4t-packages/.nv-l4t-disable-boot-fw-update-in-preinstall && \
     apt-get update && \
     apt-get install -y --no-install-recommends --option=Dpkg::Options::="--force-confnew" \
-      nvidia-l4t-core \
-    && \
-    rm -rf /var/lib/apt/lists/*
+      nvidia-l4t-core
 
-RUN apt-get update && \
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
-      nvidia-jetpack \
-    && \
-    rm -rf /var/lib/apt/lists/*
+      nvidia-jetpack
