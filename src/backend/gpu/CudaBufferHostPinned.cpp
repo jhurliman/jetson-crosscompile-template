@@ -7,8 +7,10 @@
 tl::expected<std::unique_ptr<CudaBufferHostPinned>, StreamError> CudaBufferHostPinned::create(
   size_t byteSize, CudaHostPinnedFlags flags) {
   CUDA_EXPECTED_INIT();
-  void* data;
-  CUDA_EXPECTED(cudaMallocHost(&data, byteSize, uint(flags)));
+  void* data = nullptr;
+  if (byteSize > 0) {
+    CUDA_EXPECTED(cudaMallocHost(&data, byteSize, static_cast<unsigned int>(flags)));
+  }
   return std::unique_ptr<CudaBufferHostPinned>(
     new CudaBufferHostPinned(static_cast<std::byte*>(data), byteSize));
 }

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
-project(JetsonCrossCompilation LANGUAGES CXX CUDA)
+project(JetsonCrossCompilation LANGUAGES CXX)
 
 option(COMPILE_CPU "Compile the CPU backend" ON)
 option(COMPILE_CUDA "Compile the CUDA backend" ON)
@@ -17,6 +17,7 @@ endif()
 
 if(COMPILE_CUDA OR COMPILE_T194 OR COMPILE_T210)
   enable_language(CUDA)
+  find_package(CUDAToolkit REQUIRED)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
@@ -29,8 +30,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-cpmaddpackage("gh:fmtlib/fmt#10.2.1")
-cpmaddpackage("gh:jeremy-rifkin/cpptrace@0.5.1")
+cpmaddpackage("gh:fmtlib/fmt#11.0.1")
+cpmaddpackage("gh:jeremy-rifkin/cpptrace@0.6.3")
 cpmaddpackage("gh:TartanLlama/expected@1.1.0")
 
 # Work around dependencies including with `-I` instead of `-isystem`
@@ -55,8 +56,6 @@ if(COMPILE_CPU)
 endif()
 
 if(COMPILE_CUDA)
-  find_package(CUDAToolkit REQUIRED)
-
   add_library(backend_cuda STATIC ${COMMON_SOURCES} ${CUDA_SOURCES})
   target_compile_options(backend_cuda PRIVATE ${PROJECT_WARNING_FLAGS})
   target_include_directories(
@@ -72,8 +71,6 @@ if(COMPILE_CUDA)
 endif()
 
 if(COMPILE_T194)
-  find_package(CUDAToolkit REQUIRED)
-
   add_library(backend_t194 STATIC ${COMMON_SOURCES} ${CUDA_SOURCES})
   target_compile_options(backend_t194 PRIVATE ${PROJECT_WARNING_FLAGS})
   target_include_directories(
@@ -89,8 +86,6 @@ if(COMPILE_T194)
 endif()
 
 if(COMPILE_T210)
-  find_package(CUDAToolkit REQUIRED)
-
   add_library(backend_t210 STATIC ${COMMON_SOURCES} ${CUDA_SOURCES})
   target_compile_options(backend_t210 PRIVATE ${PROJECT_WARNING_FLAGS})
   target_include_directories(

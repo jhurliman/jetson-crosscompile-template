@@ -24,20 +24,26 @@ static tl::expected<bool, StreamError> SupportsUnifiedMemory() {
 tl::expected<std::unique_ptr<CudaBufferUnified>, StreamError> CudaBufferUnified::create(
   size_t byteSize, CudaMemAttachFlag flag) {
   CUDA_EXPECTED_INIT();
+
+  if (byteSize == 0) {
+    return std::unique_ptr<CudaBufferUnified>(new CudaBufferUnified(nullptr, 0, true));
+  }
+
   const auto res = SupportsUnifiedMemory();
   if (!res) { return tl::make_unexpected(res.error()); }
   const bool supportsUnifiedMemory = res.value();
 
-  void* data;
+  void* data = nullptr;
   if (!supportsUnifiedMemory) {
     // This device does not support Unified Memory (Windows/WSL, or pre-2012 GPU). Fall back to
     // CudaBufferHostPinned which provides direct access to the host memory
-    CUDA_EXPECTED(cudaMallocHost(&data, byteSize, uint(CudaHostPinnedFlags::Mapped)));
+    CUDA_EXPECTED(
+      cudaMallocHost(&data, byteSize, static_cast<unsigned int>(CudaHostPinnedFlags::Mapped)));
     return std::unique_ptr<CudaBufferUnified>(
       new CudaBufferUnified(static_cast<std::byte*>(data), byteSize, false));
   }
 
-  CUDA_EXPECTED(cudaMallocManaged(&data, byteSize, uint(flag)));
+  CUDA_EXPECTED(cudaMallocManaged(&data, byteSize, static_cast<unsigned int>(flag)));
   return std::unique_ptr<CudaBufferUnified>(new CudaBufferUnified(data, byteSize, true));
 }
 
@@ -164,7 +170,7 @@ std::optional<StreamError> CudaBufferUnified::prefetch(
   // Note that `cudaStreamAttachMemAsync()`-based prefetching is not implemented
   // in QNX and will have no effect.
 #ifdef USE_T210
-  CUDA_OPTIONAL(cudaStreamAttachMemAsync(stream, data_, size_, uint(flag)));
+  CUDA_OPTIONAL(cudaStreamAttachMemAsync(stream, data_, size_, static_cast<unsigned int>(flag)));
 #else
   int dstDevice = cudaCpuDeviceId;
   if (flag != CudaMemAttachFlag::Host) { CUDA_OPTIONAL(cudaGetDevice(&dstDevice)); }

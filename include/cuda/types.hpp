@@ -69,11 +69,11 @@ enum class StreamPriority {
 };
 
 inline CudaHostPinnedFlags operator|(CudaHostPinnedFlags a, CudaHostPinnedFlags b) {
-  return CudaHostPinnedFlags(uint(a) | uint(b));
+  return CudaHostPinnedFlags(static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
 }
 
 inline CudaHostPinnedFlags operator&(CudaHostPinnedFlags a, CudaHostPinnedFlags b) {
-  return CudaHostPinnedFlags(uint(a) & uint(b));
+  return CudaHostPinnedFlags(static_cast<unsigned int>(a) & static_cast<unsigned int>(b));
 }
 
 struct StreamError {

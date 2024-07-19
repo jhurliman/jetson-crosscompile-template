@@ -10,6 +10,18 @@
       "compileCommands": "${workspaceFolder}/build/host/compile_commands.json"
     },
     {
+      "name": "MacOS",
+      "includePath": [
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/build/host/_deps/**/include"
+      ],
+      "defines": ["__INTELLISENSE__"],
+      "compilerPath": "/usr/bin/clang++",
+      "cStandard": "c23",
+      "cppStandard": "c++20",
+      "compileCommands": "${workspaceFolder}/build/host/compile_commands.json"
+    },
+    {
       "name": "Jetson Nano",
       "includePath": [
         "${workspaceFolder}/include",

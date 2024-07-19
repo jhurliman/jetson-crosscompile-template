@@ -5,7 +5,7 @@
 tl::expected<std::unique_ptr<CudaBufferDevice>, StreamError> CudaBufferDevice::create(
   size_t byteSize, cudaStream_t stream) {
   CUDA_EXPECTED_INIT();
-  void* data;
+  void* data = nullptr;
 #if HAS_CUDA_11_2
   CUDA_EXPECTED(cudaMallocAsync(&data, byteSize, stream));
 #else

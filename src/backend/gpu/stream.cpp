@@ -12,7 +12,7 @@ std::optional<StreamError> ensureInitialized(CudaDeviceSchedule schedule) {
   initialized = true;
 
   // Set the device flags
-  CUDA_OPTIONAL(cudaSetDeviceFlags(uint(schedule) | cudaDeviceMapHost));
+  CUDA_OPTIONAL(cudaSetDeviceFlags(static_cast<unsigned int>(schedule) | cudaDeviceMapHost));
 
   // Initialize the CUDA runtime
   CUDA_OPTIONAL(cudaFree(nullptr));

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cuda_wrappers/CudaBuffer.hpp"
+#include "CudaBuffer.hpp"
 #include "types.hpp"
 
 #include <cstddef>

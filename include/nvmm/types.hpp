@@ -3,7 +3,7 @@
 #include <optional>
 #include <string>
 
-#ifdef USE_T210
+#if defined(USE_T194) || defined(USE_T210)
 
 #include <nvbuf_utils.h>
 
