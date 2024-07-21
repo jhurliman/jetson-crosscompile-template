@@ -40,6 +40,8 @@ get_target_property(EXPECTED_INCLUDE_DIRS tl::expected INTERFACE_INCLUDE_DIRECTO
 
 file(GLOB_RECURSE COMMON_SOURCES "src/backend/common/*.cpp")
 file(GLOB_RECURSE CUDA_SOURCES "src/backend/gpu/*.cpp" "src/backend/gpu/*.cu")
+file(GLOB_RECURSE NVBUF_UTILS_SOURCES "src/backend/nvbuf_utils/*.cpp")
+file(GLOB_RECURSE NVUTILS_SOURCES "src/backend/nvbutils/*.cpp")
 
 if(COMPILE_CPU)
   cpmaddpackage("gh:oneapi-src/oneTBB@2021.11.0")
@@ -71,33 +73,43 @@ if(COMPILE_CUDA)
 endif()
 
 if(COMPILE_T194)
-  add_library(backend_t194 STATIC ${COMMON_SOURCES} ${CUDA_SOURCES})
+  find_package(NvUtils REQUIRED)
+
+  add_library(backend_t194 STATIC ${COMMON_SOURCES} ${CUDA_SOURCES} ${NVUTILS_SOURCES})
   target_compile_options(backend_t194 PRIVATE ${PROJECT_WARNING_FLAGS})
   target_include_directories(
     backend_t194
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/gpu)
+  target_include_directories(backend_t194 SYSTEM PUBLIC ${NvUtils_INCLUDE_DIRS})
   target_include_directories(backend_t194 SYSTEM PRIVATE ${EXPECTED_INCLUDE_DIRS})
   target_link_libraries(backend_t194 PUBLIC cpptrace::cpptrace tl::expected CUDA::cudart
-                                            CUDA::nvToolsExt)
+                                            CUDA::nvToolsExt ${NvUtils_LIBRARIES})
   target_compile_definitions(
-    backend_t194 PUBLIC -DUSE_GPU -DUSE_T194 -DCUDA_MAJOR=${CUDAToolkit_VERSION_MAJOR}
-                        -DCUDA_MINOR=${CUDAToolkit_VERSION_MINOR})
+    backend_t194 PUBLIC -DUSE_GPU -DUSE_T194
+                        -DCUDA_MAJOR=${CUDAToolkit_VERSION_MAJOR}
+                        -DCUDA_MINOR=${CUDAToolkit_VERSION_MINOR}
+                        ${NvUtils_DEFINITIONS})
 endif()
 
 if(COMPILE_T210)
-  add_library(backend_t210 STATIC ${COMMON_SOURCES} ${CUDA_SOURCES})
+  find_package(nvbuf_utils REQUIRED)
+
+  add_library(backend_t210 STATIC ${COMMON_SOURCES} ${CUDA_SOURCES} ${NVBUF_UTILS_SOURCES})
   target_compile_options(backend_t210 PRIVATE ${PROJECT_WARNING_FLAGS})
   target_include_directories(
     backend_t210
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/gpu)
+  target_include_directories(backend_t210 SYSTEM PUBLIC ${nvbuf_utils_INCLUDE_DIRS})
   target_include_directories(backend_t210 SYSTEM PRIVATE ${EXPECTED_INCLUDE_DIRS})
   target_link_libraries(backend_t210 PUBLIC cpptrace::cpptrace tl::expected CUDA::cudart
-                                            CUDA::nvToolsExt)
+                                            CUDA::nvToolsExt ${nvbuf_utils_LIBRARIES})
   target_compile_definitions(
-    backend_t210 PUBLIC -DUSE_GPU -DUSE_T210 -DCUDA_MAJOR=${CUDAToolkit_VERSION_MAJOR}
-                        -DCUDA_MINOR=${CUDAToolkit_VERSION_MINOR})
+    backend_t210 PUBLIC -DUSE_GPU -DUSE_T210
+                        -DCUDA_MAJOR=${CUDAToolkit_VERSION_MAJOR}
+                        -DCUDA_MINOR=${CUDAToolkit_VERSION_MINOR}
+                        ${nvbuf_utils_DEFINITIONS})
 endif()
 
 add_executable(myapp src/main.cpp)
