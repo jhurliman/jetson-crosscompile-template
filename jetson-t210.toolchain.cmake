@@ -21,17 +21,24 @@ endif()
 
 set(SYSROOT_CUDA "${CMAKE_SYSROOT}/usr/local/cuda-10.2")
 
-# Path to the GCC toolchain for the target architecture
-set(GCC_TOOLCHAIN
-    "${CMAKE_CURRENT_LIST_DIR}/sysroot/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu")
-if(NOT EXISTS ${GCC_TOOLCHAIN})
-  message(
-    FATAL_ERROR
-      "GCC_TOOLCHAIN does not exist: ${GCC_TOOLCHAIN}\nPlease run ./scripts/extract-sysroot.sh --board-id t210")
+# Check if we are on a non-arm64 architecture
+if(NOT CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "aarch64" AND NOT CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64")
+  # Path to the GCC toolchain for the target architecture
+  set(GCC_TOOLCHAIN
+      "${CMAKE_CURRENT_LIST_DIR}/sysroot/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu")
+  if(NOT EXISTS ${GCC_TOOLCHAIN})
+    message(
+      FATAL_ERROR
+        "GCC_TOOLCHAIN does not exist: ${GCC_TOOLCHAIN}\nPlease run ./scripts/extract-sysroot.sh --board-id t210")
+  endif()
 endif()
 
 # Path to the host (x86_64) vendored CUDA toolkit
-set(CUDAToolkit_ROOT "${CMAKE_CURRENT_LIST_DIR}/nvidia/cuda-10.2_amd64")
+if(APPLE)
+  set(CUDAToolkit_ROOT "${CMAKE_CURRENT_LIST_DIR}/nvidia/cuda-10.2_macos")
+else()
+  set(CUDAToolkit_ROOT "${CMAKE_CURRENT_LIST_DIR}/nvidia/cuda-10.2_amd64")
+endif()
 if(NOT EXISTS ${CUDAToolkit_ROOT})
   message(
     FATAL_ERROR
