@@ -10,8 +10,7 @@
 #include "../errors.hpp"
 
 /**
- * @brief A lightweight wrapper around a CudaBuffer that provides a view of the buffer as a typed
- * array.
+ * A lightweight wrapper around a CudaBuffer that provides a view of the buffer as a typed array.
  */
 template<typename T> class CudaArrayView {
 public:

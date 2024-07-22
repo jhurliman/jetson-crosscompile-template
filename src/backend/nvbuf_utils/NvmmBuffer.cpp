@@ -1,5 +1,7 @@
 #include "nvmm/NvmmBuffer.hpp"
 
+#include "cuda/CudaBuffer.hpp"
+#include "cuda/types.hpp"
 #include "nvmm/NvmmMemMap.hpp"
 
 #include <nvbuf_utils.h>
@@ -12,7 +14,7 @@ tl::expected<std::unique_ptr<NvmmBuffer>, NvmmError> NvmmBuffer::create(size_t b
   if (byteSize > std::numeric_limits<int32_t>::max()) {
     return tl::make_unexpected(NvmmError{cudaErrorInvalidValue, "byteSize too large"});
   }
-  if (byteSize == 0) { return std::unique_ptr<NvmmBuffer>(new NvmmBuffer(-1, 0)); }
+  if (byteSize == 0) { return std::unique_ptr<NvmmBuffer>(new NvmmBuffer(nullptr, -1, 0, 0)); }
 
   NvBufferCreateParams params{};
   params.width = 0;
@@ -29,10 +31,23 @@ tl::expected<std::unique_ptr<NvmmBuffer>, NvmmError> NvmmBuffer::create(size_t b
     return tl::make_unexpected(NvmmError{cudaErrorMemoryAllocation, "NvBufferCreateEx failed"});
   }
 
-  return std::unique_ptr<NvmmBuffer>(new NvmmBuffer(dmabuf_fd, byteSize));
+  // Read back the actual buffer size
+  NvBufferParams bufferParams{};
+  const int res2 = NvBufferGetParams(dmabuf_fd, &bufferParams);
+  if (res2 != 0) {
+    return tl::make_unexpected(NvmmError{cudaErrorMemoryAllocation, "NvBufferGetParams failed"});
+  }
+
+  void* pVirtAddr = bufferParams.nv_buffer;
+  const size_t nvBufferSize = size_t(bufferParams.nv_buffer_size);
+  return std::unique_ptr<NvmmBuffer>(new NvmmBuffer(pVirtAddr, dmabuf_fd, byteSize, nvBufferSize));
 }
 
-NvmmBuffer::NvmmBuffer(int fd, size_t byteSize) : size_(byteSize), fd_(fd) {}
+NvmmBuffer::NvmmBuffer(void* pVirtAddr, int fd, size_t byteSize, size_t nvBufferSize)
+  : data_(pVirtAddr),
+    size_(byteSize),
+    nvBufferSize_(nvBufferSize),
+    fd_(fd) {}
 
 NvmmBuffer::~NvmmBuffer() {
   if (fd_ < 0) { return; }
@@ -48,12 +63,24 @@ size_t NvmmBuffer::size() const {
   return size_;
 }
 
+size_t NvmmBuffer::nvBufferSize() const {
+  return nvBufferSize_;
+}
+
 int NvmmBuffer::fd() {
   return fd_;
 }
 
 int NvmmBuffer::fd() const {
   return fd_;
+}
+
+void* NvmmBuffer::data() {
+  return data_;
+}
+
+const void* NvmmBuffer::data() const {
+  return data_;
 }
 
 std::optional<NvmmError> NvmmBuffer::copyFrom(const NvmmBuffer& src,

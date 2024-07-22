@@ -79,7 +79,32 @@ enum class NvmmBufferMemAccess {
   ReadWrite, // Memory read & write.
 };
 
+enum class NvmmTransformFilter {
+  Nearest,
+  Bilinear,
+  FiveTap,
+  TenTap,
+  Smart,
+  Nicest,
+};
+
 // clang-format on
+
+struct Rect {
+  uint32_t top;
+  uint32_t left;
+  uint32_t width;
+  uint32_t height;
+};
+
+inline bool operator==(const Rect& lhs, const Rect& rhs) {
+  return lhs.top == rhs.top && lhs.left == rhs.left && lhs.width == rhs.width &&
+    lhs.height == rhs.height;
+}
+
+inline bool operator!=(const Rect& lhs, const Rect& rhs) {
+  return !(lhs == rhs);
+}
 
 struct NvmmError {
   int errorCode;
