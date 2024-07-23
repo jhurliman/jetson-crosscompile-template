@@ -63,7 +63,7 @@ jobs:
 
       # Lint
       - name: clang-tidy
-        run: clang-tidy -p build/host --config-file=.clang-tidy --use-color $(find src/ -name '*.cpp')
+        run: make tidy
 
       # Test
       - name: Run tests

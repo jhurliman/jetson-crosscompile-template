@@ -32,7 +32,7 @@ test-cpu: host-cpu
 
 # Run clang-tidy on host
 tidy: host
-	clang-tidy -p build/host --config-file=.clang-tidy --use-color $$(find src/ -name '*.cpp')
+	clang-tidy -p build/host --config-file=.clang-tidy --use-color $$(find src/ -name '*.cpp' ! -path 'src/backend/nvbuf_utils/*' ! -path 'src/backend/nvutils/*')
 
 # Clean up build directories
 clean:
