@@ -13,7 +13,7 @@ tl::expected<std::unique_ptr<CudaBufferPitched2D>, StreamError> CudaBufferPitche
   constexpr size_t alignment = 512;
   const size_t pitch = ((widthBytes + alignment - 1) / alignment) * alignment;
   const size_t byteSize = pitch * height;
-  void* data = ::malloc(byteSize);
+  void* data = std::malloc(byteSize);
   if (data == nullptr) {
     return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "malloc failed"});
   }
@@ -22,7 +22,7 @@ tl::expected<std::unique_ptr<CudaBufferPitched2D>, StreamError> CudaBufferPitche
 }
 
 CudaBufferPitched2D::~CudaBufferPitched2D() {
-  ::free(data_);
+  std::free(data_);
 }
 
 size_t CudaBufferPitched2D::size() const {
@@ -58,7 +58,7 @@ std::optional<StreamError> CudaBufferPitched2D::copyFrom(
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(data_) + dstOffset;
   const void* srcPtr = static_cast<const std::byte*>(src.cudaData()) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
@@ -66,7 +66,7 @@ std::optional<StreamError> CudaBufferPitched2D::copyFromHost(
   const void* src, size_t dstOffset, size_t count, cudaStream_t stream) {
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(data_) + dstOffset;
-  ::memcpy(dstPtr, src, count);
+  std::memcpy(dstPtr, src, count);
   return {};
 }
 
@@ -75,7 +75,7 @@ std::optional<StreamError> CudaBufferPitched2D::copyTo(
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(dst.cudaData()) + dstOffset;
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
@@ -85,7 +85,7 @@ std::optional<StreamError> CudaBufferPitched2D::copyToHost(
   (void)synchronize;
   void* dstPtr = static_cast<std::byte*>(dst);
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
@@ -93,7 +93,7 @@ std::optional<StreamError> CudaBufferPitched2D::memset(
   std::byte value, size_t count, cudaStream_t stream) {
   (void)stream;
   std::byte* dstPtr = static_cast<std::byte*>(data_);
-  ::memset(dstPtr, int(value), count);
+  std::memset(dstPtr, int(value), count);
   return {};
 }
 

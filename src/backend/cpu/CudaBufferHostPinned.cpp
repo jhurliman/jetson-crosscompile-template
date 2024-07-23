@@ -10,7 +10,7 @@ tl::expected<std::unique_ptr<CudaBufferHostPinned>, StreamError> CudaBufferHostP
   if (byteSize == 0) {
     return std::unique_ptr<CudaBufferHostPinned>(new CudaBufferHostPinned(nullptr, 0));
   }
-  std::byte* data = static_cast<std::byte*>(::malloc(byteSize));
+  std::byte* data = static_cast<std::byte*>(std::malloc(byteSize));
   if (data == nullptr) {
     return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "malloc failed"});
   }
@@ -50,7 +50,7 @@ std::optional<StreamError> CudaBufferHostPinned::copyFrom(
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(data_) + dstOffset;
   const void* srcPtr = static_cast<const std::byte*>(src.cudaData()) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
@@ -58,7 +58,7 @@ std::optional<StreamError> CudaBufferHostPinned::copyFromHost(
   const void* src, size_t dstOffset, size_t count, cudaStream_t stream) {
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(data_) + dstOffset;
-  ::memcpy(dstPtr, src, count);
+  std::memcpy(dstPtr, src, count);
   return {};
 }
 
@@ -67,7 +67,7 @@ std::optional<StreamError> CudaBufferHostPinned::copyTo(
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(dst.cudaData()) + dstOffset;
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
@@ -77,7 +77,7 @@ std::optional<StreamError> CudaBufferHostPinned::copyToHost(
   (void)synchronize;
   void* dstPtr = static_cast<std::byte*>(dst);
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
@@ -85,7 +85,7 @@ std::optional<StreamError> CudaBufferHostPinned::memset(
   std::byte value, size_t count, cudaStream_t stream) {
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(data_);
-  ::memset(dstPtr, int(value), count);
+  std::memset(dstPtr, int(value), count);
   return {};
 }
 

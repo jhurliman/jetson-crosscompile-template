@@ -42,8 +42,6 @@ constexpr cudaError_t cudaErrorInvalidValue = 1;
 constexpr cudaError_t cudaErrorMemoryAllocation = 2;
 #endif
 
-#include <optional>
-
 enum class CudaDeviceSchedule {
   Auto = 0,
   Spin = 1,
@@ -75,22 +73,6 @@ inline CudaHostPinnedFlags operator|(CudaHostPinnedFlags a, CudaHostPinnedFlags 
 inline CudaHostPinnedFlags operator&(CudaHostPinnedFlags a, CudaHostPinnedFlags b) {
   return CudaHostPinnedFlags(static_cast<unsigned int>(a) & static_cast<unsigned int>(b));
 }
-
-struct StreamError {
-  cudaError_t errorCode;
-  std::string errorMessage;
-
-  StreamError(cudaError_t code,
-    const std::string& message,
-    std::optional<std::string> filename = std::nullopt,
-    std::optional<int> line = std::nullopt)
-    : errorCode(code),
-      errorMessage(message) {
-    if (filename && line) {
-      errorMessage = *filename + ":" + std::to_string(*line) + ": " + errorMessage;
-    }
-  }
-};
 
 inline std::string cudaErrorMessage(const cudaError_t error) {
 #ifdef USE_GPU

@@ -1,13 +1,17 @@
 #pragma once
 
 #include "NvmmBuffer.hpp"
+#include "NvmmImageBufferInfo.hpp"
+#include "types.hpp"
 
 class NvmmImageBuffer : public NvmmBuffer {
 public:
-  static tl::expected<std::unique_ptr<NvmmImageBuffer>, NvmmError> create(
-    size_t width, size_t height, NvmmColorFormat format, NvmmBufferLayout layout);
+  static tl::expected<std::unique_ptr<NvmmImageBuffer>, StreamError> create(size_t width,
+    size_t height,
+    NvmmColorFormat format = NvmmColorFormat::YUV420,
+    NvmmBufferLayout layout = NvmmBufferLayout::BlockLinear);
 
-  ~NvmmImageBuffer();
+  ~NvmmImageBuffer() override = default;
 
   NvmmImageBuffer(const NvmmImageBuffer&) = delete;
   NvmmImageBuffer& operator=(const NvmmImageBuffer&) = delete;
@@ -15,18 +19,40 @@ public:
   NvmmImageBuffer(NvmmImageBuffer&&) = default;
   NvmmImageBuffer& operator=(NvmmImageBuffer&&) = default;
 
-  size_t width() const;
-  size_t height() const;
+  // Color format of this image buffer
   NvmmColorFormat format() const;
-  NvmmBufferLayout layout() const;
-  size_t pitch() const;
+  // Number of planes of hardware buffer
+  size_t numPlanes() const;
+
+  // Pixel width of the first plane
+  size_t width() const;
+  // Pixel height of the first plane
+  size_t height() const;
+
+  const NvmmImageBufferInfo& info() const;
+
+  std::optional<StreamError> copyFrom2D(const NvmmImageBuffer& src,
+    const Rect& srcRect,
+    const Rect& dstRect,
+    NvBufferSession session,
+    NvmmTransformFilter filter = NvmmTransformFilter::Smart);
+
+  std::optional<StreamError> copyFromHost2D(const std::vector<std::byte*>& srcPlanes);
+
+  std::optional<StreamError> copyTo2D(NvmmImageBuffer& dst,
+    const Rect& srcRect,
+    const Rect& dstRect,
+    NvBufferSession session,
+    NvmmTransformFilter filter = NvmmTransformFilter::Smart) const;
+
+  std::optional<StreamError> copyToHost2D(const std::vector<std::byte*>& dstPlanes) const;
 
 private:
-  NvmmImageBuffer(
-    int fd, size_t width, size_t height, NvmmColorFormat format, NvmmBufferLayout layout);
+  NvmmImageBuffer(std::byte* pVirtAddr,
+    int fd,
+    size_t byteSize,
+    size_t nvBufferSize,
+    const NvmmImageBufferInfo& info);
 
-  size_t width_;
-  size_t height_;
-  NvmmColorFormat format_;
-  NvmmBufferLayout layout_;
+  NvmmImageBufferInfo info_;
 };

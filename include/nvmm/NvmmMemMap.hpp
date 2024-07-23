@@ -1,18 +1,20 @@
 #pragma once
 
+#include "errors.hpp"
 #include "types.hpp"
 
 #include <tl/expected.hpp>
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 
 /*
  * Wraps NvBufferMemMap and NvBufferMemUnMap calls to provide RAII semantics.
  */
 class NvmmMemMap {
 public:
-  static tl::expected<std::unique_ptr<NvmmMemMap>, NvmmError> create(
+  static tl::expected<std::unique_ptr<NvmmMemMap>, StreamError> create(
     int fd, NvmmBufferMemAccess access);
 
   ~NvmmMemMap();
@@ -29,8 +31,8 @@ public:
   int fd() const;
   NvmmBufferMemAccess access() const;
 
-  std::optional<NvmmError> syncForCpu();
-  std::optional<NvmmError> syncForDevice();
+  std::optional<StreamError> syncForCpu();
+  std::optional<StreamError> syncForDevice();
 
 private:
   void* data_;

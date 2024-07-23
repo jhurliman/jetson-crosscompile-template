@@ -5,13 +5,13 @@
 
 #include <nvbuf_utils.h>
 
-tl::expected<std::unique_ptr<NvmmMemMap>, NvmmError> NvmmMemMap::create(
+tl::expected<std::unique_ptr<NvmmMemMap>, StreamError> NvmmMemMap::create(
   int fd, NvmmBufferMemAccess access) {
   void* pVirtAddr = nullptr;
   const auto flags = NvBufferMemFlags(access);
   const int res = NvBufferMemMap(fd, 0, flags, &pVirtAddr);
   if (res != 0) {
-    return tl::make_unexpected(NvmmError{cudaErrorMemoryAllocation, "NvBufferMemMap failed"});
+    return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "NvBufferMemMap failed"});
   }
   return std::unique_ptr<NvmmMemMap>(new NvmmMemMap(pVirtAddr, fd, access));
 }
@@ -44,14 +44,16 @@ NvmmBufferMemAccess NvmmMemMap::access() const {
   return access_;
 }
 
-std::optional<NvmmError> NvmmMemMap::syncForCpu() {
+std::optional<StreamError> NvmmMemMap::syncForCpu() {
   const int res = NvBufferMemSyncForCpu(fd_, 0, &data_);
-  if (res != 0) { return NvmmError{cudaErrorMemoryAllocation, "NvBufferMemSyncForCpu failed"}; }
+  if (res != 0) { return StreamError{cudaErrorMemoryAllocation, "NvBufferMemSyncForCpu failed"}; }
   return std::nullopt;
 }
 
-std::optional<NvmmError> NvmmMemMap::syncForDevice() {
+std::optional<StreamError> NvmmMemMap::syncForDevice() {
   const int res = NvBufferMemSyncForDevice(fd_, 0, &data_);
-  if (res != 0) { return NvmmError{cudaErrorMemoryAllocation, "NvBufferMemSyncForDevice failed"}; }
+  if (res != 0) {
+    return StreamError{cudaErrorMemoryAllocation, "NvBufferMemSyncForDevice failed"};
+  }
   return std::nullopt;
 }

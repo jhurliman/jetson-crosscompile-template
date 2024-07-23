@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cuda/CudaBuffer.hpp"
+#include "errors.hpp"
 #include "types.hpp"
 
 #include <tl/expected.hpp>
@@ -9,17 +9,20 @@
 #include <memory>
 #include <optional>
 
+class CudaBuffer;
+typedef struct CUstream_st* cudaStream_t;
+
 /**
- * @brief NvmmBuffer is an abstract base class that provides a RAII wrapper for NVIDIA Jetson
- * Multimedia API NvBuffer allocations.
+ * NvmmBuffer provides a RAII wrapper for NVIDIA Jetson Multimedia API NvBuffer allocations of
+ * linear memory buffers. For 2D image buffers, use `NvmmImageBuffer` instead.
  */
 class NvmmBuffer {
 public:
-  static tl::expected<std::unique_ptr<NvmmBuffer>, NvmmError> create(size_t byteSize);
+  static tl::expected<std::unique_ptr<NvmmBuffer>, StreamError> create(size_t byteSize);
 
   NvmmBuffer() = default;
 
-  ~NvmmBuffer();
+  virtual ~NvmmBuffer();
 
   NvmmBuffer(const NvmmBuffer&) = delete;
   NvmmBuffer& operator=(const NvmmBuffer&) = delete;
@@ -28,42 +31,49 @@ public:
   NvmmBuffer& operator=(NvmmBuffer&&) = default;
 
   size_t size() const;
+  size_t nvBufferSize() const;
 
   int fd();
   int fd() const;
 
-  std::optional<NvmmError> copyFrom(const NvmmBuffer& src,
+  std::byte* data();
+  const std::byte* data() const;
+
+  std::optional<StreamError> copyFrom(const NvmmBuffer& src,
     size_t srcOffset,
     size_t dstOffset,
     size_t count,
     NvBufferSession session);
 
-  std::optional<NvmmError> copyFromCuda(
+  std::optional<StreamError> copyFromCuda(
     const CudaBuffer& src, size_t srcOffset, size_t dstOffset, size_t count, cudaStream_t stream);
 
-  std::optional<NvmmError> copyFromHost(const void* src, size_t dstOffset, size_t count);
+  std::optional<StreamError> copyFromHost(const void* src, size_t dstOffset, size_t count);
 
-  std::optional<NvmmError> copyTo(NvmmBuffer& dst,
+  std::optional<StreamError> copyTo(NvmmBuffer& dst,
     size_t srcOffset,
     size_t dstOffset,
     size_t count,
     NvBufferSession session) const;
 
-  std::optional<NvmmError> copyToCuda(CudaBuffer& dst,
+  std::optional<StreamError> copyToCuda(CudaBuffer& dst,
     size_t srcOffset,
     size_t dstOffset,
     size_t count,
     cudaStream_t stream,
     bool synchronize = true) const;
 
-  std::optional<NvmmError> copyToHost(
+  std::optional<StreamError> copyToHost(
     void* dst, size_t srcOffset, size_t count, bool synchronize = true) const;
 
-  std::optional<NvmmError> memset(std::byte value, size_t count);
+  std::optional<StreamError> memset(std::byte value, size_t count);
+
+protected:
+  NvmmBuffer(std::byte* pVirtAddr, int fd, size_t byteSize, size_t nvBufferSize);
 
 private:
-  NvmmBuffer(int fd, size_t byteSize);
-
-  size_t size_;
-  int fd_;
+  std::byte* data_{};
+  size_t size_{};
+  size_t nvBufferSize_{};
+  int fd_ = -1;
 };

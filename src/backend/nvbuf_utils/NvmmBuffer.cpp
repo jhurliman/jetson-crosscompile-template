@@ -1,5 +1,7 @@
 #include "nvmm/NvmmBuffer.hpp"
 
+#include "cuda/CudaBuffer.hpp"
+#include "cuda/types.hpp"
 #include "nvmm/NvmmMemMap.hpp"
 
 #include <nvbuf_utils.h>
@@ -8,11 +10,11 @@
 #include <iostream>
 #include <limits>
 
-tl::expected<std::unique_ptr<NvmmBuffer>, NvmmError> NvmmBuffer::create(size_t byteSize) {
+tl::expected<std::unique_ptr<NvmmBuffer>, StreamError> NvmmBuffer::create(size_t byteSize) {
   if (byteSize > std::numeric_limits<int32_t>::max()) {
-    return tl::make_unexpected(NvmmError{cudaErrorInvalidValue, "byteSize too large"});
+    return tl::make_unexpected(StreamError{cudaErrorInvalidValue, "byteSize too large"});
   }
-  if (byteSize == 0) { return std::unique_ptr<NvmmBuffer>(new NvmmBuffer(-1, 0)); }
+  if (byteSize == 0) { return std::unique_ptr<NvmmBuffer>(new NvmmBuffer(nullptr, -1, 0, 0)); }
 
   NvBufferCreateParams params{};
   params.width = 0;
@@ -26,13 +28,27 @@ tl::expected<std::unique_ptr<NvmmBuffer>, NvmmError> NvmmBuffer::create(size_t b
   int dmabuf_fd = -1;
   const int res = NvBufferCreateEx(&dmabuf_fd, &params);
   if (res != 0 || dmabuf_fd < 0) {
-    return tl::make_unexpected(NvmmError{cudaErrorMemoryAllocation, "NvBufferCreateEx failed"});
+    return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "NvBufferCreateEx failed"});
   }
 
-  return std::unique_ptr<NvmmBuffer>(new NvmmBuffer(dmabuf_fd, byteSize));
+  // Read back the actual buffer size
+  NvBufferParams bufferParams{};
+  const int res2 = NvBufferGetParams(dmabuf_fd, &bufferParams);
+  if (res2 != 0) {
+    return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "NvBufferGetParams failed"});
+  }
+
+  void* data = bufferParams.nv_buffer;
+  const size_t nvBufferSize = size_t(bufferParams.nv_buffer_size);
+  return std::unique_ptr<NvmmBuffer>(
+    new NvmmBuffer(static_cast<std::byte*>(data), dmabuf_fd, byteSize, nvBufferSize));
 }
 
-NvmmBuffer::NvmmBuffer(int fd, size_t byteSize) : size_(byteSize), fd_(fd) {}
+NvmmBuffer::NvmmBuffer(std::byte* pVirtAddr, int fd, size_t byteSize, size_t nvBufferSize)
+  : data_(pVirtAddr),
+    size_(byteSize),
+    nvBufferSize_(nvBufferSize),
+    fd_(fd) {}
 
 NvmmBuffer::~NvmmBuffer() {
   if (fd_ < 0) { return; }
@@ -48,6 +64,10 @@ size_t NvmmBuffer::size() const {
   return size_;
 }
 
+size_t NvmmBuffer::nvBufferSize() const {
+  return nvBufferSize_;
+}
+
 int NvmmBuffer::fd() {
   return fd_;
 }
@@ -56,7 +76,15 @@ int NvmmBuffer::fd() const {
   return fd_;
 }
 
-std::optional<NvmmError> NvmmBuffer::copyFrom(const NvmmBuffer& src,
+std::byte* NvmmBuffer::data() {
+  return data_;
+}
+
+const std::byte* NvmmBuffer::data() const {
+  return data_;
+}
+
+std::optional<StreamError> NvmmBuffer::copyFrom(const NvmmBuffer& src,
   size_t srcOffset,
   size_t dstOffset,
   size_t count,
@@ -66,7 +94,9 @@ std::optional<NvmmError> NvmmBuffer::copyFrom(const NvmmBuffer& src,
     NvBufferTransformParams params{};
     params.session = session;
     const int res = NvBufferTransform(src.fd(), fd_, &params);
-    if (res != 0) { return NvmmError{cudaErrorMapBufferObjectFailed, "NvBufferTransform failed"}; }
+    if (res != 0) {
+      return StreamError{cudaErrorMapBufferObjectFailed, "NvBufferTransform failed"};
+    }
     return {};
   }
 
@@ -75,20 +105,20 @@ std::optional<NvmmError> NvmmBuffer::copyFrom(const NvmmBuffer& src,
 
   // Sanity check the validity of the copy operation
   if (srcOffset + count > src.size() || dstOffset + count > size()) {
-    return NvmmError{cudaErrorInvalidValue, "Out-of-bounds copy operation"};
+    return StreamError{cudaErrorInvalidValue, "Out-of-bounds copy operation"};
   }
 
   // Get a memory-mapped read pointer to the source buffer
   auto maybeSrcMap = NvmmMemMap::create(src.fd(), NvmmBufferMemAccess::Read);
   if (!maybeSrcMap) {
-    return NvmmError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"};
+    return StreamError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"};
   }
   NvmmMemMap srcMap = std::move(*maybeSrcMap.value());
 
   // Get a memory-mapped write pointer to the destination buffer
   auto maybeDstMap = NvmmMemMap::create(fd_, NvmmBufferMemAccess::Write);
   if (!maybeDstMap) {
-    return NvmmError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"};
+    return StreamError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"};
   }
   NvmmMemMap dstMap = std::move(*maybeDstMap.value());
 
@@ -96,31 +126,36 @@ std::optional<NvmmError> NvmmBuffer::copyFrom(const NvmmBuffer& src,
   return dstMap.syncForDevice();
 }
 
-std::optional<NvmmError> NvmmBuffer::copyFromCuda(
+std::optional<StreamError> NvmmBuffer::copyFromCuda(
   const CudaBuffer& src, size_t srcOffset, size_t dstOffset, size_t count, cudaStream_t stream) {
   // Get a memory-mapped write pointer to the buffer
   auto maybeMap = NvmmMemMap::create(fd_, NvmmBufferMemAccess::Write);
-  if (!maybeMap) { return NvmmError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"}; }
+  if (!maybeMap) {
+    return StreamError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"};
+  }
   NvmmMemMap map = std::move(*maybeMap.value());
 
   // Copy the data from the CudaBuffer to the buffer as a device-to-host transfer
   const auto err = src.copyToHost(map.data() + dstOffset, srcOffset, count, stream);
-  if (err) { return NvmmError{err->errorCode, err->errorMessage}; }
+  if (err) { return StreamError{err->errorCode, err->errorMessage}; }
 
   return map.syncForDevice();
 }
 
-std::optional<NvmmError> NvmmBuffer::copyFromHost(const void* src, size_t dstOffset, size_t count) {
+std::optional<StreamError> NvmmBuffer::copyFromHost(
+  const void* src, size_t dstOffset, size_t count) {
   // Get a memory-mapped write pointer to the buffer
   auto maybeMap = NvmmMemMap::create(fd_, NvmmBufferMemAccess::Write);
-  if (!maybeMap) { return NvmmError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"}; }
+  if (!maybeMap) {
+    return StreamError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"};
+  }
   NvmmMemMap map = std::move(*maybeMap.value());
 
   std::memcpy(map.data() + dstOffset, src, count);
   return map.syncForDevice();
 }
 
-std::optional<NvmmError> NvmmBuffer::copyTo(NvmmBuffer& dst,
+std::optional<StreamError> NvmmBuffer::copyTo(NvmmBuffer& dst,
   size_t srcOffset,
   size_t dstOffset,
   size_t count,
@@ -128,7 +163,7 @@ std::optional<NvmmError> NvmmBuffer::copyTo(NvmmBuffer& dst,
   return dst.copyFrom(*this, srcOffset, dstOffset, count, session);
 }
 
-std::optional<NvmmError> NvmmBuffer::copyToCuda(CudaBuffer& dst,
+std::optional<StreamError> NvmmBuffer::copyToCuda(CudaBuffer& dst,
   size_t srcOffset,
   size_t dstOffset,
   size_t count,
@@ -136,33 +171,37 @@ std::optional<NvmmError> NvmmBuffer::copyToCuda(CudaBuffer& dst,
   bool synchronize) const {
   // Get a memory-mapped read pointer to the buffer
   auto maybeMap = NvmmMemMap::create(fd_, NvmmBufferMemAccess::Read);
-  if (!maybeMap) { return NvmmError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"}; }
+  if (!maybeMap) {
+    return StreamError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"};
+  }
   NvmmMemMap map = std::move(*maybeMap.value());
 
   if (synchronize) {
     // Synchronize to host memory
     const auto err = map.syncForCpu();
-    if (err) { return NvmmError{err->errorCode, err->errorMessage}; }
+    if (err) { return StreamError{err->errorCode, err->errorMessage}; }
   }
 
   // Copy the data from the buffer to the CudaBuffer as a host-to-device transfer
   const auto err = dst.copyFromHost(map.data() + srcOffset, dstOffset, count, stream);
-  if (err) { return NvmmError{err->errorCode, err->errorMessage}; }
+  if (err) { return StreamError{err->errorCode, err->errorMessage}; }
 
   return {};
 }
 
-std::optional<NvmmError> NvmmBuffer::copyToHost(
+std::optional<StreamError> NvmmBuffer::copyToHost(
   void* dst, size_t srcOffset, size_t count, bool synchronize) const {
   // Get a memory-mapped read pointer to the buffer
   auto maybeMap = NvmmMemMap::create(fd_, NvmmBufferMemAccess::Read);
-  if (!maybeMap) { return NvmmError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"}; }
+  if (!maybeMap) {
+    return StreamError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"};
+  }
   NvmmMemMap map = std::move(*maybeMap.value());
 
   if (synchronize) {
     // Synchronize to host memory
     const auto err = map.syncForCpu();
-    if (err) { return NvmmError{err->errorCode, err->errorMessage}; }
+    if (err) { return StreamError{err->errorCode, err->errorMessage}; }
   }
 
   // Copy the data from the buffer to the host memory
@@ -170,10 +209,12 @@ std::optional<NvmmError> NvmmBuffer::copyToHost(
   return {};
 }
 
-std::optional<NvmmError> NvmmBuffer::memset(std::byte value, size_t count) {
+std::optional<StreamError> NvmmBuffer::memset(std::byte value, size_t count) {
   // Get a memory-mapped write pointer to the buffer
   auto maybeMap = NvmmMemMap::create(fd_, NvmmBufferMemAccess::Write);
-  if (!maybeMap) { return NvmmError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"}; }
+  if (!maybeMap) {
+    return StreamError{cudaErrorMapBufferObjectFailed, "NvmmMemMap::create failed"};
+  }
   NvmmMemMap map = std::move(*maybeMap.value());
 
   std::memset(map.data(), int(value), count);

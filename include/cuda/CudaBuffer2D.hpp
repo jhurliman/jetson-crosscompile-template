@@ -8,9 +8,9 @@
 #include <optional>
 
 /**
- * @brief CudaBuffer is an abstract base class that provides a common interface for various CUDA
- * allocation types (e.g. host-pinned, device, device pitched, unified, etc.) of two-dimensional
- * data buffers (e.g. images, matrices, etc.).
+ * CudaBuffer is an abstract base class that provides a common interface for various CUDA allocation
+ * types (e.g. host-pinned, device, device pitched, unified, etc.) of two-dimensional data buffers
+ * (e.g. images, matrices, etc.).
  */
 class CudaBuffer2D : public CudaBuffer {
 public:

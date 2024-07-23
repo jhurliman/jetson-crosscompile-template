@@ -1,7 +1,8 @@
 #pragma once
 
-#include <optional>
-#include <string>
+#include <string> // IWYU pragma: export
+
+static constexpr size_t NV_BUFFER_SIZE = 1008;
 
 // Forward declare opaque type NvBufferSession
 typedef struct _NvBufferSession* NvBufferSession;
@@ -79,20 +80,29 @@ enum class NvmmBufferMemAccess {
   ReadWrite, // Memory read & write.
 };
 
+enum class NvmmTransformFilter {
+  Nearest,
+  Bilinear,
+  FiveTap,
+  TenTap,
+  Smart,
+  Nicest,
+};
+
 // clang-format on
 
-struct NvmmError {
-  int errorCode;
-  std::string errorMessage;
-
-  NvmmError(int code,
-    const std::string& message,
-    std::optional<std::string> filename = std::nullopt,
-    std::optional<int> line = std::nullopt)
-    : errorCode(code),
-      errorMessage(message) {
-    if (filename && line) {
-      errorMessage = *filename + ":" + std::to_string(*line) + ": " + errorMessage;
-    }
-  }
+struct Rect {
+  uint32_t top;
+  uint32_t left;
+  uint32_t width;
+  uint32_t height;
 };
+
+inline bool operator==(const Rect& lhs, const Rect& rhs) {
+  return lhs.top == rhs.top && lhs.left == rhs.left && lhs.width == rhs.width &&
+    lhs.height == rhs.height;
+}
+
+inline bool operator!=(const Rect& lhs, const Rect& rhs) {
+  return !(lhs == rhs);
+}
