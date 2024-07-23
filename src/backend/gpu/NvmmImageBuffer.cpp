@@ -1,6 +1,6 @@
 #include "nvmm/NvmmImageBuffer.hpp"
 
-#include "cuda/types.hpp"
+#include "cuda/CudaBuffer.hpp"
 
 #include <cstring>
 #include <limits>

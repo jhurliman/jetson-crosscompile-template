@@ -6,10 +6,10 @@
 
 namespace nvmm {
 
-tl::expected<NvBufferSession, NvmmError> createSession() {
+tl::expected<NvBufferSession, StreamError> createSession() {
   const auto session = NvBufferSessionCreate();
   if (!session) {
-    return tl::make_unexpected(NvmmError{cudaErrorIllegalState, "NvBufferSessionCreate failed"});
+    return tl::make_unexpected(StreamError{cudaErrorIllegalState, "NvBufferSessionCreate failed"});
   }
   return session;
 }

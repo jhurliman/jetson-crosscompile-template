@@ -21,16 +21,18 @@ TEST_CASE("Allocates NvmmImageBuffer (YUV420)", "[nvmmimagebuffer]") {
     for (size_t width = 0; width < WIDTHS; width++) {
       bufPtr = REQUIRE_EXPECTED(NvmmImageBuffer::create(width, height));
       REQUIRE(bufPtr);
+      const auto& info = bufPtr->info();
 
       if (height * width == 0) {
         CHECK(bufPtr->fd() == -1);
         CHECK(bufPtr->data() == nullptr);
-        CHECK(bufPtr->widths() == PLANE_ZEROS);
-        CHECK(bufPtr->heights() == PLANE_ZEROS);
-        CHECK(bufPtr->pitches() == PLANE_ZEROS);
-        CHECK(bufPtr->offsets() == PLANE_ZEROS);
-        CHECK(bufPtr->sizes() == PLANE_ZEROS);
-        CHECK(bufPtr->layouts() == NvmmImageBuffer::PlaneLayoutArray{});
+        CHECK(bufPtr->nvBufferSize() == 0);
+        CHECK(info.widths == PLANE_ZEROS);
+        CHECK(info.heights == PLANE_ZEROS);
+        CHECK(info.pitches == PLANE_ZEROS);
+        CHECK(info.offsets == PLANE_ZEROS);
+        CHECK(info.sizes == PLANE_ZEROS);
+        CHECK(info.layouts == PlaneLayoutArray{});
         continue;
       }
 
@@ -42,37 +44,36 @@ TEST_CASE("Allocates NvmmImageBuffer (YUV420)", "[nvmmimagebuffer]") {
       CHECK(bufPtr->numPlanes() == 3);
       CHECK(bufPtr->width() == expectedWidth);
       CHECK(bufPtr->height() == expectedHeight);
-      CHECK(bufPtr->size() == bufPtr->sizes()[0] + bufPtr->sizes()[1] + bufPtr->sizes()[2]);
+      CHECK(bufPtr->size() == info.size());
       CHECK(bufPtr->fd() >= 0);
       CHECK(bufPtr->data() != nullptr);
-      CHECK(bufPtr->widths() == PlaneArray{expectedWidth, expectedWidth / 2, expectedWidth / 2, 0});
-      CHECK(
-        bufPtr->heights() == PlaneArray{expectedHeight, expectedHeight / 2, expectedHeight / 2, 0});
-      CHECK(bufPtr->pitches() == PlaneArray{MIN_PITCH, MIN_PITCH, MIN_PITCH, 0});
-      CHECK(bufPtr->offsets() == PlaneArray{0, MIN_PLANE_SIZE, MIN_PLANE_SIZE * 2, 0});
-      CHECK(bufPtr->sizes() == PlaneArray{MIN_PLANE_SIZE, MIN_PLANE_SIZE, MIN_PLANE_SIZE, 0});
-      CHECK(bufPtr->layouts() ==
-        NvmmImageBuffer::PlaneLayoutArray{BlockLinear, BlockLinear, BlockLinear, Pitch});
+      CHECK(info.widths == PlaneArray{expectedWidth, expectedWidth / 2, expectedWidth / 2, 0});
+      CHECK(info.heights == PlaneArray{expectedHeight, expectedHeight / 2, expectedHeight / 2, 0});
+      CHECK(info.pitches == PlaneArray{MIN_PITCH, MIN_PITCH, MIN_PITCH, 0});
+      CHECK(info.offsets == PlaneArray{0, MIN_PLANE_SIZE, MIN_PLANE_SIZE * 2, 0});
+      CHECK(info.sizes == PlaneArray{MIN_PLANE_SIZE, MIN_PLANE_SIZE, MIN_PLANE_SIZE, 0});
+      CHECK(info.layouts == PlaneLayoutArray{BlockLinear, BlockLinear, BlockLinear, Pitch});
     }
   }
 
   // Test large allocation (~21MB)
   bufPtr = REQUIRE_EXPECTED(NvmmImageBuffer::create(4096, 4096));
   REQUIRE(bufPtr);
+  const auto& info = bufPtr->info();
   REQUIRE(bufPtr->format() == NvmmColorFormat::YUV420);
   REQUIRE(bufPtr->numPlanes() == 3);
   REQUIRE(bufPtr->width() == 4096);
   REQUIRE(bufPtr->height() == 4096);
-  CHECK(bufPtr->size() == bufPtr->sizes()[0] + bufPtr->sizes()[1] + bufPtr->sizes()[2]);
+  CHECK(bufPtr->size() == 16777216 + 4194304 + 4194304 + 0);
   REQUIRE(bufPtr->fd() >= 0);
   REQUIRE(bufPtr->data() != nullptr);
-  REQUIRE(bufPtr->widths() == PlaneArray{4096, 2048, 2048, 0});
-  REQUIRE(bufPtr->heights() == PlaneArray{4096, 2048, 2048, 0});
-  REQUIRE(bufPtr->pitches() == PlaneArray{4096, 2048, 2048, 0});
-  REQUIRE(bufPtr->offsets() == PlaneArray{0, 16777216, 16777216 + 4194304, 0});
-  REQUIRE(bufPtr->sizes() == PlaneArray{16777216, 4194304, 4194304, 0});
-  REQUIRE(bufPtr->layouts() ==
-    NvmmImageBuffer::PlaneLayoutArray{BlockLinear, BlockLinear, BlockLinear, Pitch});
+  REQUIRE(bufPtr->nvBufferSize() == 1008);
+  REQUIRE(info.widths == PlaneArray{4096, 2048, 2048, 0});
+  REQUIRE(info.heights == PlaneArray{4096, 2048, 2048, 0});
+  REQUIRE(info.pitches == PlaneArray{4096, 2048, 2048, 0});
+  REQUIRE(info.offsets == PlaneArray{0, 16777216, 16777216 + 4194304, 0});
+  REQUIRE(info.sizes == PlaneArray{16777216, 4194304, 4194304, 0});
+  REQUIRE(info.layouts == PlaneLayoutArray{BlockLinear, BlockLinear, BlockLinear, Pitch});
 
   bufPtr.reset();
 }
@@ -83,6 +84,7 @@ TEST_CASE("Allocates NvmmImageBuffer (all)", "[nvmmimagebuffer]") {
     std::unique_ptr<NvmmImageBuffer> bufPtr =
       REQUIRE_EXPECTED(NvmmImageBuffer::create(test.width, test.height, test.format));
     REQUIRE(bufPtr);
+    const auto& info = bufPtr->info();
     CHECK(bufPtr->format() == test.format);
     CAPTURE(test.format);
     CHECK(bufPtr->numPlanes() == test.numPlanes);
@@ -91,12 +93,12 @@ TEST_CASE("Allocates NvmmImageBuffer (all)", "[nvmmimagebuffer]") {
     CHECK(bufPtr->size() == test.sizes[0] + test.sizes[1] + test.sizes[2] + test.sizes[3]);
     CHECK(bufPtr->fd() >= 0);
     CHECK(bufPtr->data() != nullptr);
-    CHECK(bufPtr->widths() == test.widths);
-    CHECK(bufPtr->heights() == test.heights);
-    CHECK(bufPtr->pitches() == test.pitches);
-    CHECK(bufPtr->offsets() == test.offsets);
-    CHECK(bufPtr->sizes() == test.sizes);
-    CHECK(bufPtr->layouts() == test.layouts);
+    CHECK(info.widths == test.widths);
+    CHECK(info.heights == test.heights);
+    CHECK(info.pitches == test.pitches);
+    CHECK(info.offsets == test.offsets);
+    CHECK(info.sizes == test.sizes);
+    CHECK(info.layouts == test.layouts);
   }
 }
 

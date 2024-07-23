@@ -10,7 +10,7 @@ tl::expected<std::unique_ptr<CudaBufferUnified>, StreamError> CudaBufferUnified:
   if (byteSize == 0) {
     return std::unique_ptr<CudaBufferUnified>(new CudaBufferUnified(nullptr, 0, true));
   }
-  void* data = ::malloc(byteSize);
+  void* data = std::malloc(byteSize);
   if (data == nullptr) {
     return tl::make_unexpected(StreamError{cudaErrorMemoryAllocation, "malloc failed"});
   }
@@ -35,7 +35,7 @@ CudaBufferUnified::CudaBufferUnified(void* data, size_t byteSize, bool isDevice)
     isDevice_(isDevice) {}
 
 CudaBufferUnified::~CudaBufferUnified() {
-  ::free(data_);
+  std::free(data_);
 }
 
 size_t CudaBufferUnified::size() const {
@@ -67,7 +67,7 @@ std::optional<StreamError> CudaBufferUnified::copyFrom(
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(data_) + dstOffset;
   const void* srcPtr = static_cast<const std::byte*>(src.cudaData()) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
@@ -75,7 +75,7 @@ std::optional<StreamError> CudaBufferUnified::copyFromHost(
   const void* src, size_t dstOffset, size_t count, cudaStream_t stream) {
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(data_) + dstOffset;
-  ::memcpy(dstPtr, src, count);
+  std::memcpy(dstPtr, src, count);
   return {};
 }
 
@@ -84,7 +84,7 @@ std::optional<StreamError> CudaBufferUnified::copyTo(
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(dst.cudaData()) + dstOffset;
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
@@ -94,14 +94,14 @@ std::optional<StreamError> CudaBufferUnified::copyToHost(
   (void)synchronize;
   void* dstPtr = static_cast<std::byte*>(dst);
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
 std::optional<StreamError> CudaBufferUnified::memset(
   std::byte value, size_t count, cudaStream_t stream) {
   (void)stream;
-  ::memset(data_, int(value), count);
+  std::memset(data_, int(value), count);
   return {};
 }
 

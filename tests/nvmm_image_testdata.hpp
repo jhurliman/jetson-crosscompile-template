@@ -3,7 +3,7 @@
 #include "nvmm/NvmmImageBuffer.hpp"
 #include "nvmm/types.hpp"
 
-using PlaneArray = NvmmImageBuffer::PlaneArray;
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 
 constexpr NvmmBufferLayout BlockLinear = NvmmBufferLayout::BlockLinear;
 constexpr NvmmBufferLayout Pitch = NvmmBufferLayout::Pitch;
@@ -18,7 +18,7 @@ struct AllocationTest {
   PlaneArray pitches;
   PlaneArray offsets;
   PlaneArray sizes;
-  NvmmImageBuffer::PlaneLayoutArray layouts;
+  PlaneLayoutArray layouts;
 };
 
 constexpr AllocationTest OnePlane(NvmmColorFormat format) {
@@ -195,3 +195,5 @@ static const std::vector<AllocationTest> NVMM_IMAGE_ALLOCATION_TESTS = {
  // OnePlane(NvmmColorFormat::BGRA_10_10_10_2_709), // Unsupported on Jetpack 32.6
   // OnePlane(NvmmColorFormat::BGRA_10_10_10_2_2020), // Unsupported on Jetpack 32.6
 };
+
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)

@@ -1,6 +1,7 @@
 #include "nvmm/NvmmBuffer.hpp"
 
 #include "cuda/CudaBuffer.hpp"
+#include "cuda_expected.hpp"
 #include "nvmm/types.hpp"
 
 #include <cstring>
@@ -73,10 +74,16 @@ std::optional<StreamError> NvmmBuffer::copyFrom(const NvmmBuffer& src,
 
 std::optional<StreamError> NvmmBuffer::copyFromCuda(
   const CudaBuffer& src, size_t srcOffset, size_t dstOffset, size_t count, cudaStream_t stream) {
-  (void)stream;
+  // void* dstPtr = static_cast<std::byte*>(data_) + dstOffset;
+  // const void* srcPtr = static_cast<const std::byte*>(src.cudaData()) + srcOffset;
+  // const auto copyType = src.isDevice() ? cudaMemcpyDeviceToDevice : cudaMemcpyHostToDevice;
+  // CUDA_OPTIONAL(cudaMemcpyAsync(dstPtr, srcPtr, count, copyType, stream));
+
   void* dstPtr = static_cast<std::byte*>(data_) + dstOffset;
   const void* srcPtr = static_cast<const std::byte*>(src.cudaData()) + srcOffset;
-  std::memcpy(dstPtr, srcPtr, count);
+  const auto copyType = src.isDevice() ? cudaMemcpyDeviceToHost : cudaMemcpyHostToHost;
+  CUDA_OPTIONAL(cudaMemcpyAsync(dstPtr, srcPtr, count, copyType, stream));
+
   return {};
 }
 
@@ -105,7 +112,9 @@ std::optional<StreamError> NvmmBuffer::copyToCuda(CudaBuffer& dst,
   (void)synchronize;
   void* dstPtr = static_cast<std::byte*>(dst.cudaData()) + dstOffset;
   const void* srcPtr = static_cast<const std::byte*>(data_) + srcOffset;
-  std::memcpy(dstPtr, srcPtr, count);
+  const auto copyType = dst.isDevice() ? cudaMemcpyHostToDevice : cudaMemcpyHostToHost;
+  CUDA_OPTIONAL(cudaMemcpyAsync(dstPtr, srcPtr, count, copyType, stream));
+
   return {};
 }
 

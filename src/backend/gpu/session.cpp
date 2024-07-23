@@ -1,6 +1,6 @@
 #include "nvmm/session.hpp"
 
-// NvBufferSession is simply `nullptr` in the CPU backend
+// NvBufferSession is simply `nullptr` in the GPU backend
 
 namespace nvmm {
 

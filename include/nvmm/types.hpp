@@ -1,7 +1,8 @@
 #pragma once
 
-#include <optional>
-#include <string>
+#include <string> // IWYU pragma: export
+
+static constexpr size_t NV_BUFFER_SIZE = 1008;
 
 // Forward declare opaque type NvBufferSession
 typedef struct _NvBufferSession* NvBufferSession;
@@ -105,19 +106,3 @@ inline bool operator==(const Rect& lhs, const Rect& rhs) {
 inline bool operator!=(const Rect& lhs, const Rect& rhs) {
   return !(lhs == rhs);
 }
-
-struct NvmmError {
-  int errorCode;
-  std::string errorMessage;
-
-  NvmmError(int code,
-    const std::string& message,
-    std::optional<std::string> filename = std::nullopt,
-    std::optional<int> line = std::nullopt)
-    : errorCode(code),
-      errorMessage(message) {
-    if (filename && line) {
-      errorMessage = *filename + ":" + std::to_string(*line) + ": " + errorMessage;
-    }
-  }
-};
