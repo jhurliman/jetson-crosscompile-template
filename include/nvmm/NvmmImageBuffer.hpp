@@ -11,8 +11,10 @@ public:
   using PlaneArray = std::array<size_t, MAX_NUM_PLANES>;
   using PlaneLayoutArray = std::array<NvmmBufferLayout, MAX_NUM_PLANES>;
 
-  static tl::expected<std::unique_ptr<NvmmImageBuffer>, NvmmError> create(
-    size_t width, size_t height, NvmmColorFormat format, NvmmBufferLayout layout);
+  static tl::expected<std::unique_ptr<NvmmImageBuffer>, NvmmError> create(size_t width,
+    size_t height,
+    NvmmColorFormat format = NvmmColorFormat::YUV420,
+    NvmmBufferLayout layout = NvmmBufferLayout::BlockLinear);
 
   ~NvmmImageBuffer() override = default;
 

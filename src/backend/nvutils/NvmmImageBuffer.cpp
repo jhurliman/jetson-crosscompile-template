@@ -4,5 +4,3 @@
 
 #include <nvbufsurace.h>
 #include <nvbufsurftransform.h>
-
-#include <iostream>

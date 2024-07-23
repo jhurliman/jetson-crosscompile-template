@@ -1,56 +1,40 @@
 #include "nvmm/NvmmImageBuffer.hpp"
 
 #include "cuda/types.hpp"
+#include "formats.hpp"
 
+#include <dlfcn.h>
 #include <nvbuf_utils.h>
 
-#include <iostream>
 #include <limits>
-#include <sstream>
+#include <optional>
 
-static std::string ToString(const NvBufferParams& params) {
-  std::ostringstream oss;
-  oss << "NvBufferParams{";
-  oss << "dmabuf_fd=" << params.dmabuf_fd << ", ";
-  oss << "nv_buffer=" << params.nv_buffer << ", ";
-  oss << "payloadType=" << params.payloadType << ", ";
-  oss << "memsize=" << params.memsize << ", ";
-  oss << "nv_buffer_size=" << params.nv_buffer_size << ", ";
-  oss << "pixel_format=" << params.pixel_format << ", ";
-  oss << "num_planes=" << params.num_planes << ", ";
-  oss << "width=[";
-  const size_t numPlanes = std::min(size_t(params.num_planes), size_t(MAX_NUM_PLANES));
-  for (size_t i = 0; i < numPlanes; ++i) {
-    oss << params.width[i];
-    if (i + 1 < numPlanes) { oss << ", "; }
-  }
-  oss << "], height=[";
-  for (size_t i = 0; i < numPlanes; ++i) {
-    oss << params.height[i];
-    if (i + 1 < numPlanes) { oss << ", "; }
-  }
-  oss << "], pitch=[";
-  for (size_t i = 0; i < numPlanes; ++i) {
-    oss << params.pitch[i];
-    if (i + 1 < numPlanes) { oss << ", "; }
-  }
-  oss << "], offset=[";
-  for (size_t i = 0; i < numPlanes; ++i) {
-    oss << params.offset[i];
-    if (i + 1 < numPlanes) { oss << ", "; }
-  }
-  oss << "], psize=[";
-  for (size_t i = 0; i < numPlanes; ++i) {
-    oss << params.psize[i];
-    if (i + 1 < numPlanes) { oss << ", "; }
-  }
-  oss << "], layout=[";
-  for (size_t i = 0; i < numPlanes; ++i) {
-    oss << params.layout[i];
-    if (i + 1 < numPlanes) { oss << ", "; }
-  }
-  oss << "]}";
-  return oss.str();
+// Jetpack r32.7+ introduced additional color formats, changing the ordering of the color format
+// enum. We detect if we're running on 32.7+ by checking if the NvBufferCreateCompressed() function
+// is available
+static bool HasExtendedColorFormats() {
+  static std::optional<bool> hasExtendedColorFormats;
+  if (hasExtendedColorFormats.has_value()) { return hasExtendedColorFormats.value(); }
+
+  void* handle = dlopen("libnvbuf_utils.so", RTLD_LAZY);
+  if (handle == nullptr) { return false; }
+
+  void* sym = dlsym(handle, "NvBufferCreateCompressed");
+  dlclose(handle);
+
+  hasExtendedColorFormats = sym != nullptr;
+  return hasExtendedColorFormats.value();
+}
+
+// Check which version of Jetpack is running (specifically, which version of libnvbuf_utils.so is
+// available) and return the corresponding NvBufferColorFormat value. If Jetpack 32.6 or older is
+// running, some color formats such as YUV422 are unavailable and std::nullopt is returned
+static std::optional<NvBufferColorFormat> GetNvColorFormat(NvmmColorFormat format) {
+  if (HasExtendedColorFormats()) { return NvBufferColorFormat(NvBufferColorFormat32_7(format)); }
+
+  const auto result = NvBufferColorFormat32_6(format);
+  if (!result) { return {}; }
+  return NvBufferColorFormat(result.value());
 }
 
 constexpr NvBufferRect MakeNvBufferRect(const Rect& rect) {
@@ -89,13 +73,18 @@ tl::expected<std::unique_ptr<NvmmImageBuffer>, NvmmError> NvmmImageBuffer::creat
       new NvmmImageBuffer(nullptr, -1, 0, 0, format, 0, {}, {}, {}, {}, {}, {}));
   }
 
+  const auto nvFormat = GetNvColorFormat(format);
+  if (!nvFormat) {
+    return tl::make_unexpected(NvmmError{cudaErrorInvalidValue, "Color format unsupported"});
+  }
+
   NvBufferCreateParams params{};
   params.width = int32_t(width);
   params.height = int32_t(height);
   params.payloadType = NvBufferPayload_SurfArray;
   params.memsize = 0;
   params.layout = NvBufferLayout(layout);
-  params.colorFormat = NvBufferColorFormat(format);
+  params.colorFormat = nvFormat.value();
   params.nvbuf_tag = NvBufferTag_NONE;
 
   int dmabuf_fd = -1;
@@ -110,9 +99,6 @@ tl::expected<std::unique_ptr<NvmmImageBuffer>, NvmmError> NvmmImageBuffer::creat
   if (res2 != 0) {
     return tl::make_unexpected(NvmmError{cudaErrorMemoryAllocation, "NvBufferGetParams failed"});
   }
-
-  std::cout << "NvBufferCreateEx: " << res << ", dmabuf_fd: " << dmabuf_fd
-            << ", params: " << ToString(bufferParams) << "\n";
 
   void* pVirtAddr = bufferParams.nv_buffer;
   const size_t byteSize = size_t(bufferParams.psize[0]) + size_t(bufferParams.psize[1]) +

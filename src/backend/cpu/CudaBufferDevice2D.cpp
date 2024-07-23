@@ -189,3 +189,5 @@ CudaBufferDevice2D::CudaBufferDevice2D(
   : buffer_(std::move(buffer)),
     widthBytes_(widthBytes),
     height_(height) {}
+
+// NOLINTEND(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
