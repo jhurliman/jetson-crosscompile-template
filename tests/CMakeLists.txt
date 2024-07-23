@@ -18,6 +18,15 @@ if(COMPILE_CUDA)
   add_test(NAME unit_tests_cuda COMMAND unit_tests_cuda --use-colour yes)
 endif()
 
+if(COMPILE_T194)
+  add_executable(unit_tests_t194 ${TEST_SOURCES})
+  target_compile_options(unit_tests_t194 PRIVATE ${PROJECT_WARNING_FLAGS})
+  target_include_directories(unit_tests_t194 PRIVATE ${PROJECT_SOURCE_DIR}/include
+                                                     ${PROJECT_SOURCE_DIR}/src/backend/gpu)
+  target_link_libraries(unit_tests_t194 Catch2::Catch2 backend_t194)
+  add_test(NAME unit_tests_t194 COMMAND unit_tests_t194 --use-colour yes)
+endif()
+
 if(COMPILE_T210)
   add_executable(unit_tests_t210 ${TEST_SOURCES})
   target_compile_options(unit_tests_t210 PRIVATE ${PROJECT_WARNING_FLAGS})

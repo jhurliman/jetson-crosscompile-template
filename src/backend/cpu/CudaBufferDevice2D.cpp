@@ -51,7 +51,7 @@ std::optional<StreamError> CudaBufferDevice2D::copyFrom(
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(buffer_->cudaData()) + dstOffset;
   const void* srcPtr = static_cast<const std::byte*>(src.cudaData()) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
@@ -59,7 +59,7 @@ std::optional<StreamError> CudaBufferDevice2D::copyFromHost(
   const void* src, size_t dstOffset, size_t count, cudaStream_t stream) {
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(buffer_->cudaData()) + dstOffset;
-  ::memcpy(dstPtr, src, count);
+  std::memcpy(dstPtr, src, count);
   return {};
 }
 
@@ -68,7 +68,7 @@ std::optional<StreamError> CudaBufferDevice2D::copyTo(
   (void)stream;
   void* dstPtr = static_cast<std::byte*>(dst.cudaData()) + dstOffset;
   const void* srcPtr = static_cast<const std::byte*>(buffer_->cudaData()) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
@@ -78,7 +78,7 @@ std::optional<StreamError> CudaBufferDevice2D::copyToHost(
   (void)synchronize;
   void* dstPtr = static_cast<std::byte*>(dst);
   const void* srcPtr = static_cast<const std::byte*>(buffer_->cudaData()) + srcOffset;
-  ::memcpy(dstPtr, srcPtr, count);
+  std::memcpy(dstPtr, srcPtr, count);
   return {};
 }
 
@@ -86,7 +86,7 @@ std::optional<StreamError> CudaBufferDevice2D::memset(
   std::byte value, size_t count, cudaStream_t stream) {
   (void)stream;
   std::byte* dstPtr = static_cast<std::byte*>(buffer_->cudaData());
-  ::memset(dstPtr, int(value), count);
+  std::memset(dstPtr, int(value), count);
   return {};
 }
 
@@ -189,3 +189,5 @@ CudaBufferDevice2D::CudaBufferDevice2D(
   : buffer_(std::move(buffer)),
     widthBytes_(widthBytes),
     height_(height) {}
+
+// NOLINTEND(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)

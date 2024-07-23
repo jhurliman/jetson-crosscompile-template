@@ -7,8 +7,8 @@
 struct ArgumentError;
 
 /**
- * @brief A lightweight wrapper around a CudaBuffer2D that provides a view of the buffer as a 2D
- * 8-bit unsigned integer array.
+ * A lightweight wrapper around a CudaBuffer2D that provides a view of the buffer as a 2D 8-bit
+ * unsigned integer array.
  */
 class CudaImageView {
 public:

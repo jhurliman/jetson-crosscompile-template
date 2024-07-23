@@ -29,9 +29,9 @@ void launchKernelTBB(void (*kernel)(const uint3&, const uint3&, const dim3&, con
   const dim3& gridDim,
   const dim3& blockDim,
   Args... args) {
-  tbb::parallel_for(tbb::blocked_range<uint>(0, gridDim.x * blockDim.x),
-    [=](const tbb::blocked_range<uint>& range) {
-      for (uint globalThreadIdx = range.begin(); globalThreadIdx < range.end(); ++globalThreadIdx) {
+  tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridDim.x * blockDim.x),
+    [=](const tbb::blocked_range<unsigned int>& range) {
+      for (auto globalThreadIdx = range.begin(); globalThreadIdx < range.end(); ++globalThreadIdx) {
         // Calculate the block index and thread index
         const uint3 blockIdx = {globalThreadIdx / blockDim.x, 0, 0};
         const uint3 threadIdx = {globalThreadIdx % blockDim.x, 0, 0};

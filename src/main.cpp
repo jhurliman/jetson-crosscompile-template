@@ -3,6 +3,7 @@
 #include "cuda/stream.hpp"
 
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 #include <iostream>
 

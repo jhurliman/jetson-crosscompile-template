@@ -1,6 +1,7 @@
 #pragma once
 
-#include "cuda/types.hpp"
+#include "errors.hpp"
+#include "types.hpp"
 
 #include <tl/expected.hpp>
 

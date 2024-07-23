@@ -4,20 +4,20 @@
 
 __global__ void addVectorsKernel(
   CUDA_KERNEL_ARGS, const int64_t* a, const int64_t* b, int64_t* c, size_t n) {
-  uint index = blockIdx.x * blockDim.x + threadIdx.x;
-  uint stride = blockDim.x * gridDim.x;
+  const auto index = blockIdx.x * blockDim.x + threadIdx.x;
+  const auto stride = blockDim.x * gridDim.x;
 
-  for (uint i = index; i < n; i += stride) {
+  for (auto i = index; i < n; i += stride) {
     c[i] = a[i] + b[i];
   }
 }
 
 __global__ void addVectorsKernel(
   CUDA_KERNEL_ARGS, const double* a, const double* b, double* c, size_t n) {
-  uint index = blockIdx.x * blockDim.x + threadIdx.x;
-  uint stride = blockDim.x * gridDim.x;
+  const auto index = blockIdx.x * blockDim.x + threadIdx.x;
+  const auto stride = blockDim.x * gridDim.x;
 
-  for (uint i = index; i < n; i += stride) {
+  for (auto i = index; i < n; i += stride) {
     c[i] = a[i] + b[i];
   }
 }
@@ -32,8 +32,8 @@ std::optional<StreamError> addVectors(const CudaArrayView<int64_t>& a,
   }
 
   const size_t n = a.size();
-  const uint blockSize = 256;
-  const uint numBlocks = (uint(n) + blockSize - 1) / blockSize;
+  const unsigned int blockSize = 256;
+  const unsigned int numBlocks = (static_cast<unsigned int>(n) + blockSize - 1) / blockSize;
   const dim3 gridDim = {numBlocks, 1, 1};
   const dim3 blockDim = {blockSize, 1, 1};
   CUDA_KERNEL(addVectorsKernel, gridDim, blockDim, a.data(), b.data(), c.data(), n);
@@ -50,8 +50,8 @@ std::optional<StreamError> addVectors(const CudaArrayView<double>& a,
   }
 
   const size_t n = a.size();
-  const uint blockSize = 256;
-  const uint numBlocks = (uint(n) + blockSize - 1) / blockSize;
+  const unsigned int blockSize = 256;
+  const unsigned int numBlocks = (static_cast<unsigned int>(n) + blockSize - 1) / blockSize;
   CUDA_KERNEL(addVectorsKernel, numBlocks, blockSize, a.data(), b.data(), c.data(), n);
   return std::nullopt;
 }
